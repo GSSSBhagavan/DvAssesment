@@ -15,6 +15,29 @@ type VoiceAnswer = {
   status: 'COMPLETED';
 };
 
+function Waveform({ isRecording, audioData }: { isRecording: boolean; audioData: Uint8Array }) {
+  if (!isRecording) return null;
+  return (
+    <div className="flex items-center justify-center gap-1 h-12 w-full my-4">
+      {Array.from({ length: 30 }).map((_, i) => {
+        const val = audioData[i * 2] || 0; 
+        const distanceToCenter = Math.abs(i - 15) / 15;
+        const curve = Math.max(0.1, 1 - Math.pow(distanceToCenter, 2));
+        const height = Math.max(4, (val / 255) * 48 * curve);
+        
+        return (
+          <motion.div
+            key={i}
+            className="w-1 rounded-full bg-slate-900"
+            animate={{ height: height }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export default function VoiceWorkspace({ question }: { question: any }) {
   const { setAnswer, answers, setNavigationLocked } = useAssessmentState();
   const [answerData, setAnswerData] = useState<VoiceAnswer | null>(null);
@@ -223,29 +246,6 @@ export default function VoiceWorkspace({ question }: { question: any }) {
 
   const maxTime = question.expectedDurationSeconds || 30;
 
-  const Waveform = () => {
-    if (!isRecording) return null;
-    return (
-      <div className="flex items-center justify-center gap-1 h-12 w-full my-4">
-        {Array.from({ length: 30 }).map((_, i) => {
-          const val = audioData[i * 2] || 0; 
-          const distanceToCenter = Math.abs(i - 15) / 15;
-          const curve = Math.max(0.1, 1 - Math.pow(distanceToCenter, 2));
-          const height = Math.max(4, (val / 255) * 48 * curve);
-          
-          return (
-            <motion.div
-              key={i}
-              className="w-1 rounded-full bg-slate-900"
-              animate={{ height: height }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            />
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <div className="h-full flex flex-col p-6 lg:px-8 overflow-y-auto custom-scrollbar font-sans bg-[#F8FAFC] relative">
       <AnimatePresence>
@@ -333,7 +333,7 @@ export default function VoiceWorkspace({ question }: { question: any }) {
               {state === 'RECORDING' && (
                 <motion.div key="recording" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center h-full w-full">
                   <div className="text-[28px] font-medium text-slate-900 tracking-tight font-mono mb-2">{formatTime(duration)}</div>
-                  <Waveform />
+                  <Waveform isRecording={isRecording} audioData={audioData} />
                   <button 
                     onClick={handleStopRecording}
                     className="w-16 h-16 bg-[#FEF2F2] border border-[#DC2626] rounded-full flex items-center justify-center text-[#DC2626] shadow-sm hover:bg-[#FEE2E2] transition-colors focus:outline-none"

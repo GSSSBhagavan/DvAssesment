@@ -1,11 +1,5 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
-}
-
 const DB_NAME = process.env.MONGODB_DB || 'assesmentsdv';
 
 /**
@@ -20,6 +14,12 @@ if (!cached) {
 }
 
 async function connectToDatabase() {
+  const MONGODB_URI = process.env.MONGODB_URI;
+
+  if (!MONGODB_URI) {
+    throw new Error('Please define the MONGODB_URI environment variable inside .env or Vercel Environment Variables');
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
