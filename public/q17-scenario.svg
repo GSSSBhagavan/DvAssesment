@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F8FAFC" />
+  <rect x="100" y="50" width="600" height="300" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+  <g font-family="system-ui, sans-serif" fill="#1E293B">
+    <text x="400" y="90" font-size="18" font-weight="bold" text-anchor="middle" fill="#0F172A">DEVELOPER STATUS</text>
+    <line x1="150" y1="110" x2="650" y2="110" stroke="#F1F5F9" stroke-width="2" />
+    <text x="150" y="150" font-size="14" font-weight="bold" fill="#64748B">TASK:</text>
+    <text x="210" y="150" font-size="16">Payment API Integration</text>
+    <text x="150" y="200" font-size="14" font-weight="bold" fill="#64748B">ATTEMPTED:</text>
+    <text x="150" y="225" font-size="14" fill="#10B981">✓ Checked API documentation</text>
+    <text x="150" y="250" font-size="14" fill="#10B981">✓ Tested authentication</text>
+    <text x="150" y="275" font-size="14" fill="#10B981">✓ Checked request payload</text>
+    <rect x="400" y="190" width="300" height="100" rx="8" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="1" />
+    <text x="420" y="220" font-size="14" font-weight="bold" fill="#DC2626">PROBLEM:</text>
+    <text x="420" y="245" font-size="14" fill="#991B1B">Still receiving an</text>
+    <text x="420" y="265" font-size="14" fill="#991B1B">unexpected response.</text>
+  </g>
+</svg>

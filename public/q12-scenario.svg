@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F8FAFC" />
+  <rect x="100" y="50" width="600" height="300" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+  <g font-family="system-ui, sans-serif" fill="#1E293B">
+    <rect x="150" y="80" width="500" height="40" rx="6" fill="#FEF2F2" />
+    <text x="170" y="105" font-size="16" font-weight="bold" fill="#DC2626">ISSUE: API Integration Failing</text>
+    <text x="150" y="160" font-size="14" font-weight="bold" fill="#64748B">NOTES: Tried so far:</text>
+    <text x="170" y="190" font-size="14">1. Checked request parameters</text>
+    <text x="170" y="220" font-size="14">2. Checked authentication</text>
+    <text x="170" y="250" font-size="14">3. Reviewed API documentation</text>
+    <text x="150" y="300" font-size="16" font-weight="bold" fill="#B91C1C">Status: Still unresolved.</text>
+  </g>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F8FAFC" />
+  <g font-family="system-ui, sans-serif" font-weight="600" text-anchor="middle">
+    <rect x="50" y="150" width="150" height="100" rx="12" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2"/>
+    <text x="125" y="205" fill="#334155" font-size="16">Working Directory</text>
+    
+    <rect x="300" y="150" width="150" height="100" rx="12" fill="#DBEAFE" stroke="#60A5FA" stroke-width="2"/>
+    <text x="375" y="205" fill="#1D4ED8" font-size="16">Staging Area</text>
+    
+    <rect x="550" y="150" width="150" height="100" rx="12" fill="#D1FAE5" stroke="#34D399" stroke-width="2"/>
+    <text x="625" y="205" fill="#047857" font-size="16">Local Repository</text>
+
+    <!-- Arrows -->
+    <path d="M 210 200 L 290 200" fill="none" stroke="#94A3B8" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="250" y="190" fill="#64748B" font-size="14" font-weight="700">git add</text>
+    
+    <path d="M 460 200 L 540 200" fill="none" stroke="#94A3B8" stroke-width="3" marker-end="url(#arrow)"/>
+    <text x="500" y="190" fill="#64748B" font-size="14" font-weight="700">git commit</text>
+  </g>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#94A3B8" />
+    </marker>
+  </defs>
+</svg>

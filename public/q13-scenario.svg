@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F8FAFC" />
+  <rect x="100" y="50" width="600" height="300" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+  <g font-family="system-ui, sans-serif" fill="#1E293B">
+    <text x="400" y="100" font-size="20" font-weight="bold" text-anchor="middle" fill="#0F172A">DAILY PROJECT UPDATE</text>
+    <line x1="150" y1="120" x2="650" y2="120" stroke="#F1F5F9" stroke-width="2" />
+    <text x="150" y="160" font-size="14" font-weight="bold" fill="#64748B">TASK:</text>
+    <text x="220" y="160" font-size="16">Dashboard Integration</text>
+    <text x="150" y="200" font-size="14" font-weight="bold" fill="#64748B">STATUS:</text>
+    <rect x="220" y="185" width="300" height="20" rx="10" fill="#E2E8F0" />
+    <rect x="220" y="185" width="240" height="20" rx="10" fill="#3B82F6" />
+    <text x="535" y="200" font-size="14" font-weight="bold" fill="#3B82F6">80% Complete</text>
+    <text x="150" y="250" font-size="14" font-weight="bold" fill="#64748B">COMPLETED:</text>
+    <text x="250" y="250" font-size="14">Frontend integration, API connection</text>
+    <text x="150" y="280" font-size="14" font-weight="bold" fill="#64748B">REMAINING:</text>
+    <text x="250" y="280" font-size="14">Testing</text>
+  </g>
+</svg>

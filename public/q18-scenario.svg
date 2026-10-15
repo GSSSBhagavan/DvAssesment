@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F8FAFC" />
+  <rect x="150" y="50" width="500" height="300" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+  <g font-family="system-ui, sans-serif" fill="#1E293B">
+    <text x="400" y="90" font-size="18" font-weight="bold" text-anchor="middle" fill="#0F172A">PROJECT TASK</text>
+    <line x1="200" y1="110" x2="600" y2="110" stroke="#F1F5F9" stroke-width="2" />
+    <text x="200" y="150" font-size="14" font-weight="bold" fill="#64748B">TASK:</text>
+    <text x="280" y="150" font-size="16">Data Import</text>
+    <text x="200" y="190" font-size="14" font-weight="bold" fill="#64748B">DEADLINE:</text>
+    <text x="280" y="190" font-size="16" fill="#F59E0B">Today</text>
+    <rect x="200" y="230" width="400" height="60" rx="6" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="1" />
+    <text x="220" y="255" font-size="12" font-weight="bold" fill="#DC2626">ISSUE:</text>
+    <text x="220" y="275" font-size="14" fill="#991B1B">Required data has not been received.</text>
+  </g>
+</svg>

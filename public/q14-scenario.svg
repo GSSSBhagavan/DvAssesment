@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F1F5F9" />
+  <rect x="100" y="50" width="600" height="260" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+  <rect x="100" y="50" width="600" height="40" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" />
+  <g font-family="system-ui, sans-serif" font-size="16" fill="#334155">
+    <text x="120" y="110" font-weight="bold">From:</text>
+    <text x="180" y="110">Project Client</text>
+    <line x1="120" y1="130" x2="680" y2="130" stroke="#E2E8F0" stroke-width="1" />
+    <text x="120" y="180">We expected the update yesterday. Why is the project delayed?</text>
+  </g>
+</svg>

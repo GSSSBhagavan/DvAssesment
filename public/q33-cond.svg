@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 396" width="100%" height="100%">
+    <rect width="100%" height="100%" fill="#FFFFFF" />
+    <rect x="20" y="50" width="760" height="296" rx="12" fill="#0F172A" />
+    <circle cx="50" cy="80" r="8" fill="#EF4444"/>
+    <circle cx="75" cy="80" r="8" fill="#F59E0B"/>
+    <circle cx="100" cy="80" r="8" fill="#10B981"/>
+    <g font-family="monospace, Consolas, 'Courier New'" font-size="28" font-weight="500" fill="#E2E8F0">
+      <text x="50" y="140" xml:space="preserve">age = 20</text>
+      <text x="50" y="176" xml:space="preserve"></text>
+      <text x="50" y="212" xml:space="preserve">if age &gt;= 18:</text>
+      <text x="50" y="248" xml:space="preserve">    print("Adult")</text>
+      <text x="50" y="284" xml:space="preserve">else:</text>
+      <text x="50" y="320" xml:space="preserve">    print("Minor")</text>
+    </g>
+</svg>

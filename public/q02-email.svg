@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F1F5F9" />
+  <rect x="50" y="30" width="700" height="340" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+  <rect x="50" y="30" width="700" height="40" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" />
+  <circle cx="70" cy="50" r="6" fill="#EF4444" />
+  <circle cx="90" cy="50" r="6" fill="#F59E0B" />
+  <circle cx="110" cy="50" r="6" fill="#10B981" />
+  <g font-family="system-ui, sans-serif" font-size="16" fill="#334155">
+    
+  <text x="80" y="100" font-weight="bold">From:</text>
+  <text x="140" y="100">Sarah (Client)</text>
+  <line x1="80" y1="120" x2="720" y2="120" stroke="#E2E8F0" stroke-width="1" />
+  <text x="80" y="150" font-weight="bold">Subject:</text>
+  <text x="150" y="150">Project Update</text>
+  <line x1="80" y1="170" x2="720" y2="170" stroke="#E2E8F0" stroke-width="1" />
+  <text x="80" y="210">Hello Team,</text>
+  <text x="80" y="240">Could you please let us know the current status of the project?</text>
+  <text x="80" y="270">We were expecting an update today.</text>
+  <text x="80" y="310">Thanks,</text>
+  <text x="80" y="330">Sarah</text>
+
+  </g>
+</svg>

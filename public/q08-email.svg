@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F1F5F9" />
+  
+  <!-- Email A -->
+  <rect x="30" y="30" width="355" height="340" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+  <rect x="30" y="30" width="355" height="40" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" />
+  <text x="180" y="55" font-family="system-ui" font-size="16" font-weight="bold" fill="#475569">EMAIL A</text>
+  <g font-family="system-ui, sans-serif" font-size="14" fill="#334155">
+    <text x="50" y="100" font-weight="bold">Subject:</text>
+    <text x="110" y="100">Update</text>
+    <line x1="50" y1="120" x2="365" y2="120" stroke="#E2E8F0" stroke-width="1" />
+    <text x="50" y="150">Hi,</text>
+    <text x="50" y="180">The thing we discussed is almost done.</text>
+    <text x="50" y="200">Will tell you later.</text>
+  </g>
+
+  <!-- Email B -->
+  <rect x="415" y="30" width="355" height="340" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1" />
+  <rect x="415" y="30" width="355" height="40" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" />
+  <text x="565" y="55" font-family="system-ui" font-size="16" font-weight="bold" fill="#475569">EMAIL B</text>
+  <g font-family="system-ui, sans-serif" font-size="14" fill="#334155">
+    <text x="435" y="100" font-weight="bold">Subject:</text>
+    <text x="495" y="100">Project Dashboard — Status Update</text>
+    <line x1="435" y1="120" x2="750" y2="120" stroke="#E2E8F0" stroke-width="1" />
+    <text x="435" y="150">Hi Sarah,</text>
+    <text x="435" y="180">The dashboard update is currently in</text>
+    <text x="435" y="200">progress. We expect to complete it by</text>
+    <text x="435" y="220">4 PM today and will share the updated</text>
+    <text x="435" y="240">version once it is ready.</text>
+    <text x="435" y="280">Regards,</text>
+    <text x="435" y="300">Alex</text>
+  </g>
+</svg>

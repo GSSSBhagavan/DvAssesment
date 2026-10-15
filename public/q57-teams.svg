@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F8FAFC" />
+  <g font-family="system-ui, sans-serif" font-weight="600" text-anchor="middle" font-size="24">
+    <rect x="150" y="30" width="300" height="190" rx="12" fill="#FFF" stroke="#E2E8F0" stroke-width="4" />
+    <text x="240" y="75" fill="#475569">Team A:</text>
+    <text x="350" y="75" fill="#3B82F6" font-size="32">4</text>
+    
+    <text x="240" y="135" fill="#475569">Team B:</text>
+    <text x="350" y="135" fill="#10B981" font-size="32">6</text>
+    
+    <text x="240" y="195" fill="#475569">Team C:</text>
+    <text x="350" y="195" fill="#F59E0B" font-size="32">5</text>
+  </g>
+</svg>

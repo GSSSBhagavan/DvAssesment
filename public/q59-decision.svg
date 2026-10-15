@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F8FAFC" />
+  <g font-family="system-ui, sans-serif" font-weight="600" text-anchor="middle" font-size="24">
+    <rect x="100" y="30" width="400" height="140" rx="12" fill="#0F172A" />
+    <text x="300" y="70" fill="#94A3B8">API Response Time</text>
+    <text x="300" y="110" fill="#EF4444">Before: 900 ms</text>
+    <text x="300" y="150" fill="#10B981">After: 300 ms</text>
+  </g>
+</svg>

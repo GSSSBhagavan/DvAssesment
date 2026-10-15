@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#F8FAFC" />
+  <g font-family="system-ui, sans-serif" font-weight="700">
+    <path d="M 100 150 L 700 150" fill="none" stroke="#94A3B8" stroke-width="4"/>
+    <path d="M 300 150 L 400 250 L 600 250" fill="none" stroke="#3B82F6" stroke-width="4"/>
+    
+    <circle cx="100" cy="150" r="12" fill="#E2E8F0" stroke="#64748B" stroke-width="4"/>
+    <circle cx="300" cy="150" r="12" fill="#E2E8F0" stroke="#64748B" stroke-width="4"/>
+    <circle cx="500" cy="150" r="12" fill="#E2E8F0" stroke="#64748B" stroke-width="4"/>
+    <circle cx="700" cy="150" r="12" fill="#E2E8F0" stroke="#64748B" stroke-width="4"/>
+    
+    <circle cx="400" cy="250" r="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="4"/>
+    <circle cx="600" cy="250" r="12" fill="#DBEAFE" stroke="#3B82F6" stroke-width="4"/>
+
+    <text x="730" y="155" fill="#475569" font-size="18">main</text>
+    <text x="630" y="255" fill="#2563EB" font-size="18">feature-login</text>
+  </g>
+</svg>
