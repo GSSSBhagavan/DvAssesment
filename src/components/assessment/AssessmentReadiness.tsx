@@ -10,20 +10,23 @@ import {
   ArrowLeft, 
   Loader2, 
   Cpu, 
-  HardDrive, 
   Maximize,
   Wifi
 } from 'lucide-react';
 import CameraPreview from '@/components/integrity/CameraPreview';
 import { ReadinessCheck } from '@/lib/readiness/readinessEngine';
+import { NetworkMetrics } from '@/lib/readiness/networkDiagnostics';
+import { UseCameraReturn } from '@/hooks/useCamera';
 
 interface AssessmentReadinessProps {
   checks: ReadinessCheck[];
+  networkMetrics?: NetworkMetrics | null;
   isOverallReady: boolean;
   isChecking: boolean;
   runBasicChecks: () => void;
   retryCheck: (id: string) => void;
   requestCamera: () => void;
+  camera?: UseCameraReturn;
   onBack: () => void;
   onStartAssessment: () => Promise<void>;
   isStarting: boolean;
@@ -38,7 +41,6 @@ const checkIcons: Record<string, React.ReactNode> = {
   browser: <Cpu size={13} />,
   network: <Wifi size={13} />,
   fullscreen: <Maximize size={13} />,
-  storage: <HardDrive size={13} />,
 };
 
 const checkDisplayNames: Record<string, string> = {
@@ -46,16 +48,17 @@ const checkDisplayNames: Record<string, string> = {
   browser: 'Browser compatibility',
   network: 'Network connection',
   fullscreen: 'Fullscreen support',
-  storage: 'Local storage',
 };
 
 export default function AssessmentReadiness({
   checks,
+  networkMetrics,
   isOverallReady,
   isChecking,
   runBasicChecks,
   retryCheck,
   requestCamera,
+  camera,
   onBack,
   onStartAssessment,
   isStarting,
@@ -64,15 +67,16 @@ export default function AssessmentReadiness({
   isResumable = false,
   onSignOut,
 }: AssessmentReadinessProps) {
-  const [agreed, setAgreed] = useState(true);
+  // Checkbox strictly defaults to FALSE so the student must explicitly confirm
+  const [agreed, setAgreed] = useState(false);
 
   // Extract clean candidate display name (e.g. "Maharshi" from "Maharshi Patel")
   const displayName = candidateName && candidateName.trim()
     ? candidateName.trim().split(' ')[0]
     : null;
 
-  // Order checks logically: camera first, then browser, network, fullscreen, storage
-  const orderedCheckIds = ['camera', 'browser', 'network', 'fullscreen', 'storage'];
+  // Order checks logically: camera first, then browser, network, fullscreen
+  const orderedCheckIds = ['camera', 'browser', 'network', 'fullscreen'];
   const orderedChecks = orderedCheckIds
     .map(id => checks.find(c => c.id === id))
     .filter((c): c is ReadinessCheck => Boolean(c));
@@ -100,32 +104,32 @@ export default function AssessmentReadiness({
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="text-left shrink-0 mb-3 sm:mb-4"
+        className="w-full text-left space-y-1 mb-3 sm:mb-4 shrink-0"
       >
-        <h1 className="text-2xl sm:text-[26px] font-bold text-[#121214] tracking-[-0.03em] leading-tight font-sans">
-          {displayName ? `Welcome back, ${displayName}.` : 'Welcome back.'}
+        <h1 className="text-2xl sm:text-[28px] font-bold text-[#121214] tracking-[-0.03em] leading-tight">
+          Welcome back{displayName ? `, ${displayName}` : ''}.
         </h1>
-        <p className="text-[13.5px] text-[#71717A] mt-1 leading-snug font-normal">
-          {isResumable 
-            ? 'Continue where you left off.' 
-            : 'Please verify your camera and system readiness before beginning.'}
+        <p className="text-[13px] sm:text-[13.5px] text-[#52525B] font-normal leading-relaxed">
+          Please verify your camera and system readiness before beginning.
         </p>
       </motion.div>
 
       {/* ======================================================== */}
-      {/* 2. BALANCED TWO-COLUMN LAYOUT (CAMERA & READINESS)        */}
+      {/* 2. TWO-COLUMN SPLIT DIAGNOSTICS DECK                      */}
       {/* ======================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start my-auto shrink-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start my-auto w-full">
         
-        {/* LEFT COLUMN: Clean, Proportional Camera Preview Card */}
+        {/* LEFT COLUMN: Dedicated Camera Verification Section */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.99 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col space-y-2 text-left"
         >
-          <div className="text-[11px] font-semibold tracking-[0.16em] text-[#71717A] uppercase font-sans">
-            CAMERA VERIFICATION
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold tracking-[0.16em] text-[#71717A] uppercase font-sans">
+              CAMERA VERIFICATION
+            </span>
           </div>
 
           {/* Balanced Camera Card */}
@@ -133,7 +137,8 @@ export default function AssessmentReadiness({
             <CameraPreview 
               className="w-full h-full object-cover" 
               showBadge={true}
-              onRequestCamera={requestCamera}
+              camera={camera}
+              onRequestCamera={camera ? camera.startCamera : requestCamera}
             />
           </div>
 
@@ -169,6 +174,7 @@ export default function AssessmentReadiness({
             {orderedChecks.map((check) => {
               const isPassed = check.status === 'passed';
               const isFailed = check.status === 'failed';
+              const isRequesting = check.status === 'requesting';
               const isCheckingItem = check.status === 'checking' || check.status === 'idle';
               const checkName = checkDisplayNames[check.id] || check.label;
 
@@ -185,13 +191,17 @@ export default function AssessmentReadiness({
                           ? 'bg-emerald-50 text-emerald-600' 
                           : isFailed 
                             ? 'bg-rose-50 text-rose-600' 
-                            : 'bg-black/[0.04] text-[#71717A]'
+                            : isRequesting && check.id === 'camera'
+                              ? 'bg-blue-50 text-blue-600'
+                              : 'bg-black/[0.04] text-[#71717A]'
                       }`}
                     >
                       {isPassed ? (
                         <Check size={11} strokeWidth={2.8} />
                       ) : isFailed ? (
                         <AlertTriangle size={11} strokeWidth={2.4} />
+                      ) : isRequesting && check.id === 'camera' ? (
+                        <Camera size={11} />
                       ) : (
                         checkIcons[check.id] || <Cpu size={11} />
                       )}
@@ -201,7 +211,33 @@ export default function AssessmentReadiness({
                       <div className="text-[13px] font-semibold text-[#121214] tracking-tight truncate">
                         {checkName}
                       </div>
-                      {isFailed && check.message && (
+
+                      {/* Real-time Network Subtitle */}
+                      {check.id === 'network' && (
+                        <div className="text-[11px] text-[#52525B] leading-tight mt-0.5 truncate flex items-center gap-1.5 font-sans">
+                          <span className="relative flex h-1.5 w-1.5 shrink-0">
+                            {isPassed ? (
+                              <>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                              </>
+                            ) : (
+                              <span className="inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
+                            )}
+                          </span>
+                          <span>{networkMetrics?.summary || check.message}</span>
+                        </div>
+                      )}
+
+                      {/* Camera request hint */}
+                      {check.id === 'camera' && !isPassed && (
+                        <div className="text-[11px] text-[#71717A] leading-tight mt-0.5 truncate">
+                          {check.message || 'Click "Enable" to verify camera permission'}
+                        </div>
+                      )}
+
+                      {/* Failure message for others */}
+                      {isFailed && check.id !== 'network' && check.id !== 'camera' && check.message && (
                         <div className="text-[11px] text-rose-600 leading-tight mt-0.5 truncate">
                           {check.message}
                         </div>
@@ -218,23 +254,64 @@ export default function AssessmentReadiness({
                       </span>
                     )}
 
-                    {isPassed && (
+                    {/* Camera Action Button when not yet active */}
+                    {check.id === 'camera' && !isPassed && (
+                      <button
+                        type="button"
+                        onClick={camera ? camera.startCamera : requestCamera}
+                        disabled={camera?.status === 'requesting'}
+                        className="px-3.5 py-1 rounded-full text-[11.5px] font-medium bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white transition-all shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        {camera?.status === 'requesting' ? (
+                          <>
+                            <Loader2 size={11} className="animate-spin" />
+                            <span>Enabling...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Camera size={11} />
+                            <span>Enable</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {/* Real-time Network Status Pill */}
+                    {check.id === 'network' && isPassed && (
+                      <span className={`inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-0.5 rounded-full border transition-all ${
+                        networkMetrics?.quality === 'optimal' || networkMetrics?.quality === 'good'
+                          ? 'text-emerald-700 bg-emerald-50 border-emerald-200/60'
+                          : networkMetrics?.quality === 'moderate'
+                            ? 'text-amber-700 bg-amber-50 border-amber-200/60'
+                            : 'text-rose-700 bg-rose-50 border-rose-200/60'
+                      }`}>
+                        <span className="relative flex h-1.5 w-1.5 shrink-0">
+                          {networkMetrics?.quality === 'optimal' || networkMetrics?.quality === 'good' ? (
+                            <>
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                            </>
+                          ) : networkMetrics?.quality === 'moderate' ? (
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
+                          ) : (
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
+                          )}
+                        </span>
+                        <span>{networkMetrics?.realtimePillText || 'Ready'}</span>
+                      </span>
+                    )}
+
+                    {/* Standard Ready Pill for other passed checks */}
+                    {isPassed && check.id !== 'network' && (
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/50">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         <span>Ready</span>
                       </span>
                     )}
 
-                    {isFailed && (
-                      check.id === 'camera' ? (
-                        <button
-                          type="button"
-                          onClick={requestCamera}
-                          className="px-3 py-0.5 rounded-full text-[11px] font-medium bg-[#2563EB] hover:bg-[#1D4ED8] text-white transition-colors cursor-pointer shadow-2xs"
-                        >
-                          Enable
-                        </button>
-                      ) : check.canRetry ? (
+                    {/* Generic retry for non-camera failed items */}
+                    {isFailed && check.id !== 'camera' && (
+                      check.canRetry ? (
                         <button
                           type="button"
                           onClick={() => retryCheck(check.id)}
@@ -254,20 +331,24 @@ export default function AssessmentReadiness({
             })}
           </div>
 
-          {/* Calm Environment Acknowledgment Checkbox */}
-          <div 
+          {/* Calm Environment Acknowledgment Checkbox (Starts strictly UNCHECKED) */}
+          <button 
+            type="button"
+            id="confirm-environment-toggle"
+            role="checkbox"
+            aria-checked={agreed}
             onClick={() => setAgreed(!agreed)}
-            className="flex items-center gap-2.5 px-1 py-1 text-[12px] text-[#52525B] select-none cursor-pointer group"
+            className="flex items-center gap-2.5 px-1 py-1.5 text-[12px] text-[#52525B] select-none cursor-pointer group text-left w-full focus:outline-none"
           >
             <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${
-              agreed ? 'bg-[#2563EB] text-white' : 'border border-black/25 bg-white group-hover:border-[#2563EB]/60'
+              agreed ? 'bg-[#2563EB] text-white' : 'border border-zinc-300 bg-white group-hover:border-[#2563EB]/60'
             }`}>
               {agreed && <Check size={11} strokeWidth={3} />}
             </div>
             <span className="leading-snug">
               I confirm my environment is well-lit, quiet, and ready for evaluation.
             </span>
-          </div>
+          </button>
         </motion.div>
 
       </div>

@@ -1,35 +1,54 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useCamera } from '@/hooks/useCamera';
+import { useCamera, UseCameraReturn } from '@/hooks/useCamera';
 import { Camera, AlertCircle, VideoOff, Loader2 } from 'lucide-react';
 
 interface CameraPreviewProps {
   className?: string;
   showBadge?: boolean;
   onRequestCamera?: () => void;
+  camera?: UseCameraReturn;
 }
 
 export default function CameraPreview({
   className = '',
   showBadge = true,
-  onRequestCamera
+  onRequestCamera,
+  camera: externalCamera
 }: CameraPreviewProps) {
-  const { status, error, deviceLabel, attachVideo, startCamera } = useCamera(true);
+  // Use passed camera instance or initialize internal fallback (autoStart=false)
+  const internalCamera = useCamera(false);
+  const activeCam = externalCamera || internalCamera;
+  const { status, error, deviceLabel, attachVideo, startCamera } = activeCam;
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     if (videoRef.current) {
       attachVideo(videoRef.current);
     }
+    return () => {
+      if (videoRef.current) {
+        try {
+          if (videoRef.current.srcObject && 'getTracks' in (videoRef.current.srcObject as any)) {
+            (videoRef.current.srcObject as MediaStream).getTracks().forEach((t) => {
+              try {
+                t.enabled = false;
+                t.stop();
+              } catch {}
+            });
+          }
+          videoRef.current.srcObject = null;
+        } catch {}
+      }
+    };
   }, [attachVideo, status]);
 
-  const handleRequest = () => {
+  const handleRequest = async () => {
     if (onRequestCamera) {
       onRequestCamera();
-    } else {
-      startCamera();
     }
+    await startCamera();
   };
 
   return (

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAssessmentState } from '@/hooks/useAssessmentState';
-import { useCamera } from '@/hooks/useCamera';
+import { useCamera, stopAllCameraStreams } from '@/hooks/useCamera';
 import { useFaceDetection, FaceDetectionState, HeadOrientation } from '@/hooks/useFaceDetection';
 import ProctoringStatusBar from './ProctoringStatusBar';
 import { AlertTriangle, Maximize } from 'lucide-react';
@@ -13,19 +13,34 @@ export default function AntiCheatMonitor() {
   const [currentFaceState, setCurrentFaceState] = useState<FaceDetectionState>('FACE_PRESENT');
   const [currentOrientation, setCurrentOrientation] = useState<HeadOrientation | null>(null);
 
-  // Continuous Camera and Face Detection
+  const isExamActive = status === 'IN_PROGRESS' || status === 'REVIEW';
+
+  // Continuous Camera and Face Detection (only active during actual exam)
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const { attachVideo, status: cameraStatus, error: cameraError } = useCamera(true);
+  const { attachVideo, status: cameraStatus, error: cameraError, stopCamera } = useCamera(isExamActive);
   
   const faceAbsentStartRef = useRef<number | null>(null);
   const lastLookingAwayReportedRef = useRef<number>(0);
   const lastOutOfFrameReportedRef = useRef<number>(0);
 
+  // Stop camera hardware immediately when submitted or expired, or when component unmounts
   useEffect(() => {
-    if (videoRef.current) {
+    if (!isExamActive) {
+      setIsFullscreenExit(false);
+      stopCamera();
+      stopAllCameraStreams();
+    }
+    return () => {
+      stopCamera();
+      stopAllCameraStreams();
+    };
+  }, [isExamActive, stopCamera]);
+
+  useEffect(() => {
+    if (videoRef.current && isExamActive) {
       attachVideo(videoRef.current);
     }
-  }, [attachVideo, cameraStatus]);
+  }, [attachVideo, cameraStatus, isExamActive]);
 
   // Handle camera permission and device telemetry
   useEffect(() => {
@@ -116,6 +131,10 @@ export default function AntiCheatMonitor() {
     };
 
     const handleFullscreenChange = () => {
+      if (status !== 'IN_PROGRESS' && status !== 'REVIEW') {
+        setIsFullscreenExit(false);
+        return;
+      }
       if (!document.fullscreenElement) {
         recordIntegrityEvent('FULLSCREEN_EXIT');
         setIsFullscreenExit(true);

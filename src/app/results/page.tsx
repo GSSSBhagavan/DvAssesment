@@ -3,6 +3,7 @@ import { useAssessmentState } from '@/hooks/useAssessmentState';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AssessmentCompletion from '@/components/assessment/AssessmentCompletion';
+import { stopAllCameraStreams, exitFullscreenSafely } from '@/hooks/useCamera';
 
 interface SectionBreakdownItem {
   sectionId: string;
@@ -52,6 +53,12 @@ export default function ResultsPage() {
   useEffect(() => {
     setMounted(true);
     let isCancelled = false;
+
+    // Immediately exit fullscreen and release camera hardware on final screen
+    exitFullscreenSafely();
+    stopAllCameraStreams();
+    const t1 = setTimeout(stopAllCameraStreams, 150);
+    const t2 = setTimeout(stopAllCameraStreams, 600);
 
     async function fetchResults() {
       try {
@@ -128,6 +135,9 @@ export default function ResultsPage() {
 
     return () => {
       isCancelled = true;
+      clearTimeout(t1);
+      clearTimeout(t2);
+      stopAllCameraStreams();
     };
   }, [router]);
 

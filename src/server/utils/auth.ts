@@ -82,8 +82,8 @@ export function validateOrigin(req: Request): boolean {
   return false;
 }
 
-export function requireAuth(handler: (req: Request, session: JwtPayload) => Promise<NextResponse>) {
-  return async (req: Request) => {
+export function requireAuth(handler: (req: Request, session: JwtPayload, context?: any) => Promise<NextResponse>) {
+  return async (req: Request, context?: any) => {
     // CSRF defense-in-depth: Validate Origin on state-changing methods
     if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
       if (!validateOrigin(req)) {
@@ -95,6 +95,6 @@ export function requireAuth(handler: (req: Request, session: JwtPayload) => Prom
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    return handler(req, session);
+    return handler(req, session, context);
   };
 }

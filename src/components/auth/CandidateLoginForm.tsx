@@ -11,6 +11,7 @@ import {
   EyeOff 
 } from 'lucide-react';
 import { useAssessmentState } from '@/hooks/useAssessmentState';
+import { validateEmail, getEmailValidationError } from '@/lib/validation/email';
 
 export interface CandidateUser {
   id?: string;
@@ -48,19 +49,69 @@ export default function CandidateLoginForm({
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Field interaction states for validation on blur/submit without premature errors
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [fullNameTouched, setFullNameTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+
   const isBlue = accentColor === 'blue';
   const inputInteractiveClasses = isBlue
     ? "hover:border-[#2563EB] focus:border-[#2563EB] focus:ring-3 focus:ring-[#2563EB]/15"
     : "hover:border-[#DC2626] focus:border-[#DC2626] focus:ring-3 focus:ring-[#DC2626]/12";
   const buttonAccentClasses = isBlue
-    ? "bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] focus-visible:ring-[#2563EB]"
-    : "bg-[#DC2626] hover:bg-[#B91C1C] active:bg-[#991B1B] focus-visible:ring-[#DC2626]";
+    ? "bg-[#2563EB] hover:bg-white active:bg-slate-100 text-white hover:text-[#121214] border-2 border-[#2563EB] hover:border-[#121214] focus-visible:ring-[#2563EB]"
+    : "bg-[#DC2626] hover:bg-white active:bg-slate-100 text-white hover:text-[#121214] border-2 border-[#DC2626] hover:border-[#121214] focus-visible:ring-[#DC2626]";
 
-  const isFormValid = email.trim().length > 0 && password.trim().length > 0;
+  // Inline error states (evaluated only after user interaction or submit attempt)
+  const emailError = emailTouched ? getEmailValidationError(email) : null;
+  const fullNameError = fullNameTouched
+    ? (!fullName.trim() 
+        ? 'Please enter your full name.' 
+        : fullName.trim().length < 2 
+          ? 'Full name must be at least 2 characters.' 
+          : null)
+    : null;
+  const passwordError = passwordTouched
+    ? (!password.trim() ? 'Please enter your password.' : null)
+    : null;
+
+  const isFormValid = Boolean(
+    validateEmail(email) && 
+    fullName.trim().length >= 2 && 
+    password.trim().length > 0
+  );
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading || !isFormValid) return;
+    if (loading) return;
+
+    // Mark all fields touched on submit attempt
+    setEmailTouched(true);
+    setFullNameTouched(true);
+    setPasswordTouched(true);
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    if (!validateEmail(trimmedEmail)) {
+      setError('Enter a valid email address, such as student@gmail.com.');
+      return;
+    }
+
+    const trimmedName = fullName.trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      setError('Please enter your full name.');
+      return;
+    }
+
+    if (!password.trim()) {
+      setError('Please enter your password.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
@@ -69,9 +120,9 @@ export default function CandidateLoginForm({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          email: email.trim(), 
+          email: trimmedEmail, 
           password,
-          fullName: fullName.trim() || undefined
+          fullName: trimmedName
         })
       });
 
@@ -89,10 +140,10 @@ export default function CandidateLoginForm({
           }
         }
       } else {
-        setError(data.error || 'Unable to sign in. Please verify your registered credentials.');
+        setError(data.error || 'Unable to connect right now. Please try again.');
       }
     } catch {
-      setError('A network error occurred. Please verify your connection and try again.');
+      setError('Unable to connect right now. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -152,14 +203,14 @@ export default function CandidateLoginForm({
       </AnimatePresence>
 
       {/* Compact, Clearly Aligned Form */}
-      <form onSubmit={handleLogin} className="space-y-3.5">
+      <form onSubmit={handleLogin} className="space-y-3.5" noValidate>
         {/* Email Field */}
         <div>
           <label 
             htmlFor="candidate-email" 
             className="block text-[13px] font-semibold text-[#18181B] mb-1.5"
           >
-            Registered Email
+            Registered Email <span className="text-[#DC2626] font-semibold text-xs">*</span>
           </label>
           <input
             id="candidate-email"
@@ -168,11 +219,20 @@ export default function CandidateLoginForm({
             autoFocus
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (error) setError('');
+            }}
+            onBlur={() => setEmailTouched(true)}
             placeholder="student@example.com"
             disabled={loading}
-            className={`w-full px-3.5 py-2.5 sm:py-3 bg-white border border-black/[0.12] rounded-xl text-[14px] text-[#121214] transition-all placeholder:text-[#A1A1AA] outline-none disabled:opacity-60 disabled:bg-black/[0.02] shadow-xs ${inputInteractiveClasses}`}
+            className={`w-full px-3.5 py-2.5 sm:py-3 bg-white border ${emailError ? 'border-[#DC2626] focus:ring-[#DC2626]/15' : 'border-black/[0.12]'} rounded-xl text-[14px] text-[#121214] transition-all placeholder:text-[#A1A1AA] outline-none disabled:opacity-60 disabled:bg-black/[0.02] shadow-xs ${inputInteractiveClasses}`}
           />
+          {emailError && (
+            <p className="mt-1 text-[12px] text-[#DC2626] font-medium flex items-center gap-1">
+              <span>{emailError}</span>
+            </p>
+          )}
         </div>
 
         {/* Full Name Field */}
@@ -181,18 +241,28 @@ export default function CandidateLoginForm({
             htmlFor="candidate-name" 
             className="block text-[13px] font-semibold text-[#18181B] mb-1.5"
           >
-            Full Name <span className="text-[#86868B] font-normal text-xs">(optional)</span>
+            Full Name <span className="text-[#DC2626] font-semibold text-xs">*</span>
           </label>
           <input
             id="candidate-name"
             type="text"
+            required
             autoComplete="name"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Your full name"
+            onChange={(e) => {
+              setFullName(e.target.value);
+              if (error) setError('');
+            }}
+            onBlur={() => setFullNameTouched(true)}
+            placeholder="Enter your full name"
             disabled={loading}
-            className={`w-full px-3.5 py-2.5 sm:py-3 bg-white border border-black/[0.12] rounded-xl text-[14px] text-[#121214] transition-all placeholder:text-[#A1A1AA] outline-none disabled:opacity-60 disabled:bg-black/[0.02] shadow-xs ${inputInteractiveClasses}`}
+            className={`w-full px-3.5 py-2.5 sm:py-3 bg-white border ${fullNameError ? 'border-[#DC2626] focus:ring-[#DC2626]/15' : 'border-black/[0.12]'} rounded-xl text-[14px] text-[#121214] transition-all placeholder:text-[#A1A1AA] outline-none disabled:opacity-60 disabled:bg-black/[0.02] shadow-xs ${inputInteractiveClasses}`}
           />
+          {fullNameError && (
+            <p className="mt-1 text-[12px] text-[#DC2626] font-medium flex items-center gap-1">
+              <span>{fullNameError}</span>
+            </p>
+          )}
         </div>
 
         {/* Password Field */}
@@ -201,7 +271,7 @@ export default function CandidateLoginForm({
             htmlFor="candidate-password" 
             className="block text-[13px] font-semibold text-[#18181B] mb-1.5"
           >
-            Password
+            Password <span className="text-[#DC2626] font-semibold text-xs">*</span>
           </label>
           <div className="relative">
             <input
@@ -210,10 +280,14 @@ export default function CandidateLoginForm({
               required
               autoComplete="current-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) setError('');
+              }}
+              onBlur={() => setPasswordTouched(true)}
               placeholder="••••••••••••"
               disabled={loading}
-              className={`w-full pl-3.5 pr-11 py-2.5 sm:py-3 bg-white border border-black/[0.12] rounded-xl text-[14px] text-[#121214] transition-all placeholder:text-[#A1A1AA] outline-none disabled:opacity-60 disabled:bg-black/[0.02] shadow-xs ${inputInteractiveClasses}`}
+              className={`w-full pl-3.5 pr-11 py-2.5 sm:py-3 bg-white border ${passwordError ? 'border-[#DC2626] focus:ring-[#DC2626]/15' : 'border-black/[0.12]'} rounded-xl text-[14px] text-[#121214] transition-all placeholder:text-[#A1A1AA] outline-none disabled:opacity-60 disabled:bg-black/[0.02] shadow-xs ${inputInteractiveClasses}`}
             />
             <button
               type="button"
@@ -226,6 +300,11 @@ export default function CandidateLoginForm({
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
+          {passwordError && (
+            <p className="mt-1 text-[12px] text-[#DC2626] font-medium flex items-center gap-1">
+              <span>{passwordError}</span>
+            </p>
+          )}
         </div>
 
         {/* Submit Primary CTA */}
@@ -233,17 +312,17 @@ export default function CandidateLoginForm({
           <button
             type="submit"
             disabled={loading || !isFormValid}
-            className={`w-full py-3.5 rounded-full font-medium text-[15px] shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:bg-black/[0.08] disabled:text-[#A1A1AA] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100 group text-white ${buttonAccentClasses}`}
+            className={`w-full py-3.5 rounded-full font-medium text-[15px] shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:bg-black/[0.08] disabled:border-transparent disabled:text-[#A1A1AA] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100 group ${buttonAccentClasses}`}
           >
             {loading ? (
               <>
-                <Loader2 size={16} className="animate-spin text-white" />
+                <Loader2 size={16} className="animate-spin text-current" />
                 <span>Signing In...</span>
               </>
             ) : (
               <>
                 <span>Enter Assessment</span>
-                <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
+                <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1 text-current" />
               </>
             )}
           </button>

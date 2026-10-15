@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSystemReadiness } from '@/hooks/useSystemReadiness';
-import { useCamera } from '@/hooks/useCamera';
+import { useCamera, stopAllCameraStreams, exitFullscreenSafely } from '@/hooks/useCamera';
 import AssessmentBrandHeader from '@/components/brand/AssessmentBrandHeader';
 import AssessmentReadiness from '@/components/assessment/AssessmentReadiness';
 import AssessmentCompletion from '@/components/assessment/AssessmentCompletion';
@@ -27,23 +27,19 @@ export default function LandingPage() {
   const [starting, setStarting] = useState(false);
   const [viewMode, setViewMode] = useState<'AUTO' | 'HOME' | 'COMPLETION'>('AUTO');
 
-  // System readiness diagnostics
+  // Camera controller (explicit user action required; no autoStart on refresh)
+  const camera = useCamera(false);
+
+  // System readiness diagnostics synced with camera state
   const {
     checks,
+    networkMetrics,
     isOverallReady,
     isChecking,
     runBasicChecks,
     retryCheck,
     requestCamera
-  } = useSystemReadiness();
-
-  // Monitor camera stream for readiness
-  const isReadinessActive = candidateUser !== null && (status === 'SYSTEM_CHECK' || status === 'RULES' || status === 'NOT_STARTED');
-  const {
-    status: cameraStatus,
-    stream: cameraStream,
-    startCamera
-  } = useCamera(isReadinessActive);
+  } = useSystemReadiness(camera.status, camera.deviceLabel);
 
   // Auth and session validation
   const checkUserAndSession = useCallback(async () => {
@@ -137,6 +133,21 @@ export default function LandingPage() {
     }
   }, [status, candidateUser, runBasicChecks]);
 
+  // Ensure camera hardware is stopped and fullscreen exited on completion screen
+  useEffect(() => {
+    if (status === 'SUBMITTED' || status === 'EXPIRED') {
+      exitFullscreenSafely();
+      stopAllCameraStreams();
+      const t1 = setTimeout(stopAllCameraStreams, 200);
+      const t2 = setTimeout(stopAllCameraStreams, 800);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        stopAllCameraStreams();
+      };
+    }
+  }, [status]);
+
   const handleHome = () => {
     setViewMode('HOME');
   };
@@ -157,7 +168,7 @@ export default function LandingPage() {
     setFullscreenError(null);
 
     // 1. Verify camera availability
-    let isCameraActive = cameraStatus === 'active' || (cameraStream && cameraStream.active);
+    let isCameraActive = camera.status === 'active' || (camera.stream && camera.stream.active);
     if (!isCameraActive) {
       const camCheck = checks.find(c => c.id === 'camera');
       if (camCheck && camCheck.status === 'passed') {
@@ -167,7 +178,7 @@ export default function LandingPage() {
 
     if (!isCameraActive) {
       try {
-        const stream = await startCamera();
+        const stream = await camera.startCamera();
         if (stream && stream.active) {
           isCameraActive = true;
         }
@@ -264,11 +275,13 @@ export default function LandingPage() {
             >
               <AssessmentReadiness
                 checks={checks}
+                networkMetrics={networkMetrics}
                 isOverallReady={isOverallReady}
                 isChecking={isChecking}
                 runBasicChecks={runBasicChecks}
                 retryCheck={retryCheck}
-                requestCamera={requestCamera}
+                requestCamera={camera.startCamera}
+                camera={camera}
                 onBack={handleHome}
                 onStartAssessment={handleStart}
                 isStarting={starting}

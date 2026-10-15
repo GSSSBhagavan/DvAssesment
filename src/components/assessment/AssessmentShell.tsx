@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import assessmentData, { getOrderedQuestions } from '@/lib/safe-questions';
 import { WifiOff, CheckCircle2, RefreshCw } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
+import { stopAllCameraStreams, exitFullscreenSafely } from '@/hooks/useCamera';
 
 export default function AssessmentShell() {
   const {
@@ -94,10 +95,21 @@ export default function AssessmentShell() {
     }
   }, [debouncedAnswers, status, currentIndex, flags, visited, questionOrder, setSaveStatus]);
 
+  // Stop camera hardware and exit fullscreen immediately upon submission
+  useEffect(() => {
+    if (status === 'SUBMITTED' || status === 'EXPIRED') {
+      exitFullscreenSafely();
+      stopAllCameraStreams();
+      router.replace('/results');
+    }
+  }, [status, router]);
+
   // Session Recovery & Reconnection on mount or page load
   useEffect(() => {
     setMounted(true);
-    if (status === 'SUBMITTED') {
+    if (status === 'SUBMITTED' || status === 'EXPIRED') {
+      exitFullscreenSafely();
+      stopAllCameraStreams();
       router.replace('/results');
       return;
     }
@@ -108,6 +120,8 @@ export default function AssessmentShell() {
       .then(curr => {
         if (curr.session) {
           if (curr.session.status === 'SUBMITTED' || curr.session.status === 'EXPIRED') {
+            exitFullscreenSafely();
+            stopAllCameraStreams();
             useAssessmentState.setState({
               status: curr.session.status,
               assessmentId: curr.session.id,

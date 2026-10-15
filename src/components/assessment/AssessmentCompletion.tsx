@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { LogOut } from 'lucide-react';
+import { stopAllCameraStreams, exitFullscreenSafely } from '@/hooks/useCamera';
 
 interface AssessmentCompletionProps {
   sessionId?: string | null;
@@ -20,6 +21,19 @@ export default function AssessmentCompletion({
   onHome,
   scoreData,
 }: AssessmentCompletionProps) {
+  // Ensure fullscreen is immediately exited and all camera hardware is turned off on final screen
+  useEffect(() => {
+    exitFullscreenSafely();
+    stopAllCameraStreams();
+    const t1 = setTimeout(stopAllCameraStreams, 150);
+    const t2 = setTimeout(stopAllCameraStreams, 600);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      stopAllCameraStreams();
+    };
+  }, []);
+
   // Extract candidate's real display name
   const studentName = candidateName && candidateName.trim()
     ? candidateName.trim().split(' ')[0]

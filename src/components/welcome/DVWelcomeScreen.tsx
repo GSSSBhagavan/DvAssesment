@@ -221,22 +221,22 @@ export default function DVWelcomeScreen({
               type="button"
               onClick={handleAction}
               disabled={navigating}
-              className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-white hover:bg-black/[0.04] active:bg-black/[0.08] active:scale-[0.985] text-[#121214] border-2 border-[#121214] font-semibold text-[15px] shadow-xs hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF8F5] transition-all duration-200 cursor-pointer disabled:opacity-75 group"
+              className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full bg-[#2563EB] hover:bg-white active:bg-slate-100 active:scale-[0.985] text-white hover:text-[#121214] border-2 border-[#2563EB] hover:border-[#121214] font-semibold text-[15px] shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF8F5] transition-all duration-200 cursor-pointer disabled:opacity-75 group"
             >
               {navigating ? (
                 <>
-                  <Loader2 size={16} className="animate-spin text-[#121214]" />
+                  <Loader2 size={16} className="animate-spin text-current" />
                   <span>Loading...</span>
                 </>
               ) : isAuthenticated ? (
                 <>
                   <span>Resume Assessment</span>
-                  <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1.5 text-[#121214]" />
+                  <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1.5 text-current" />
                 </>
               ) : (
                 <>
                   <span>Candidate Login</span>
-                  <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1.5 text-[#121214]" />
+                  <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1.5 text-current" />
                 </>
               )}
             </button>

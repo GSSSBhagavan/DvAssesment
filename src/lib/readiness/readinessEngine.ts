@@ -70,56 +70,9 @@ export const checkBrowser = async (): Promise<{ status: ReadinessStatus; message
 
 // Advanced Network Check (Latency & Stability)
 export const checkNetwork = async (): Promise<{ status: ReadinessStatus; message: string }> => {
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    return { status: 'failed', message: 'No internet connection detected.' };
-  }
-  
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s max
-    
-    const start = performance.now();
-    // Fetch a small cache-busted request to test round-trip latency
-    const res = await fetch(`/favicon.ico?_cb=${Date.now()}`, { 
-      method: 'HEAD', 
-      cache: 'no-store', 
-      signal: controller.signal 
-    });
-    
-    const end = performance.now();
-    clearTimeout(timeoutId);
-    
-    if (res.ok) {
-      const latency = Math.round(end - start);
-      
-      // Network Information API (Chrome/Edge/Android)
-      let connType = "";
-      const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-      if (connection) {
-        if (connection.saveData) {
-          return { status: 'warning', message: `Data Saver is enabled. Latency: ${latency}ms.` };
-        }
-        if (connection.effectiveType === '2g' || connection.effectiveType === '3g') {
-          return { status: 'warning', message: `Slow connection (${connection.effectiveType}). Latency: ${latency}ms.` };
-        }
-        connType = ` [${connection.effectiveType.toUpperCase()}]`;
-      }
-
-      if (latency > 1500) {
-        return { status: 'warning', message: `High latency (${latency}ms). Video/audio uploads may fail.` };
-      } else if (latency > 500) {
-        return { status: 'passed', message: `Connection acceptable (${latency}ms)${connType}.` };
-      }
-      return { status: 'passed', message: `Connection excellent (${latency}ms)${connType}.` };
-    }
-    
-    return { status: 'warning', message: 'Connection available but health check returned non-200.' };
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
-      return { status: 'failed', message: 'Network timeout (>8s). Connection is too slow.' };
-    }
-    return { status: 'failed', message: 'Failed to reach assessment service. Check firewall/VPN.' };
-  }
+  const { measureRealtimeNetwork } = await import('@/lib/readiness/networkDiagnostics');
+  const metrics = await measureRealtimeNetwork();
+  return { status: metrics.status, message: metrics.summary };
 };
 
 // Advanced Storage Check (LocalStorage, SessionStorage, IndexedDB)
@@ -189,24 +142,8 @@ export const checkCameraSupport = async (): Promise<{ status: ReadinessStatus; m
     return { status: 'failed', message: 'Webcam API strictly blocked or unsupported by browser.' };
   }
 
-  // Use permissions API to check without prompting, if supported
-  if (navigator.permissions && navigator.permissions.query) {
-    try {
-      const perm = await navigator.permissions.query({ name: 'camera' as PermissionName });
-      if (perm.state === 'granted') {
-        return { status: 'passed', message: 'Camera permission already granted.' };
-      } else if (perm.state === 'denied') {
-        return { status: 'failed', message: 'Camera permission denied in browser settings. Please allow camera.' };
-      } else {
-        return { status: 'requesting', message: 'Camera permission required for proctoring.' };
-      }
-    } catch {
-      // Permissions API might not support 'camera' in some browsers
-      return { status: 'requesting', message: 'Camera access needs verification.' };
-    }
-  }
-
-  return { status: 'requesting', message: 'Camera access needs verification.' };
+  // Camera verification must be initiated by student on each page visit/refresh
+  return { status: 'requesting', message: 'Click "Enable Camera" to verify webcam.' };
 };
 
 // Actual camera hardware enumeration & verification

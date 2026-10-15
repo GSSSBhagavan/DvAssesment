@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import assessmentData, { getOrderedQuestions } from '@/lib/safe-questions';
+import { stopAllCameraStreams, exitFullscreenSafely } from '@/hooks/useCamera';
 
 export type AssessmentStatus = 'NOT_STARTED' | 'SYSTEM_CHECK' | 'RULES' | 'IN_PROGRESS' | 'REVIEW' | 'SUBMITTING' | 'SUBMITTED' | 'EXPIRED';
 
@@ -339,6 +340,10 @@ export const useAssessmentState = create<AssessmentState>()(
             throw new Error(errData.error || 'Submission failed on server.');
           }
           
+          // Exit fullscreen and immediately turn off camera hardware
+          await exitFullscreenSafely();
+          stopAllCameraStreams();
+
           set({ 
             status: 'SUBMITTED',
             submittedAt: Date.now(),
@@ -365,6 +370,11 @@ export const useAssessmentState = create<AssessmentState>()(
         
         try {
           await fetch('/api/assessment/submit', { method: 'POST' });
+          
+          // Exit fullscreen and immediately turn off camera hardware
+          await exitFullscreenSafely();
+          stopAllCameraStreams();
+
           set({ 
             status: 'SUBMITTED',
             submittedAt: Date.now(),
@@ -377,16 +387,18 @@ export const useAssessmentState = create<AssessmentState>()(
         }
       },
 
-      resetState: () => set({
-        status: 'NOT_STARTED',
-        currentIndex: 0,
-        currentQuestionId: null,
-        currentSection: null,
-        answers: {},
-        flags: {},
-        visited: { 0: true },
-        integrityEvents: [],
-        startTime: null,
+      resetState: () => {
+        stopAllCameraStreams();
+        set({
+          status: 'NOT_STARTED',
+          currentIndex: 0,
+          currentQuestionId: null,
+          currentSection: null,
+          answers: {},
+          flags: {},
+          visited: { 0: true },
+          integrityEvents: [],
+          startTime: null,
         endTime: null,
         expandedSection: null,
         assessmentId: null,
@@ -403,9 +415,10 @@ export const useAssessmentState = create<AssessmentState>()(
         proctoringStatus: 'NORMAL',
         proctoringMessage: null,
         resumeNotification: null
-      }),
+      });
+    },
 
-      setNavigationLocked: (locked) => set({ isNavigationLocked: locked }),
+    setNavigationLocked: (locked) => set({ isNavigationLocked: locked }),
       setRecordingVoice: (isRecording, stopFn) => set({ isRecordingVoice: isRecording, stopAndSaveVoice: stopFn || null }),
       setShowSubmitModal: (show) => set({ showSubmitModal: show })
     }),

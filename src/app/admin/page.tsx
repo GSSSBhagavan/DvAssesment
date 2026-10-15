@@ -1,7 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, UserPlus, LogOut, CheckCircle2, AlertCircle, Loader2, Users, FileText, AlertTriangle, Eye, X, BarChart3, Clock } from 'lucide-react';
+import { 
+  ShieldCheck, UserPlus, LogOut, CheckCircle2, AlertCircle, Loader2, 
+  Users, FileText, AlertTriangle, Eye, X, BarChart3, Clock,
+  Search, FileCheck2, XCircle, MinusCircle, Copy, Printer, Check, Filter, HelpCircle
+} from 'lucide-react';
 
 interface SectionBreakdownItem {
   sectionId: string;
@@ -84,6 +88,17 @@ export default function AdminDashboard() {
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [selectedCandidateName, setSelectedCandidateName] = useState<string>('');
   const [selectedBreakdown, setSelectedBreakdown] = useState<{ candidateName: string; candidateEmail: string; sections: SectionBreakdownItem[] } | null>(null);
+
+  // Student Answers Comparative Audit modal state (for Faculty Inquiries)
+  const [selectedAuditStudent, setSelectedAuditStudent] = useState<ResultItem | null>(null);
+  const [auditData, setAuditData] = useState<any | null>(null);
+  const [loadingAudit, setLoadingAudit] = useState(false);
+  const [auditFilter, setAuditFilter] = useState<'ALL' | 'WRONG' | 'CORRECT' | 'UNANSWERED'>('ALL');
+  const [copiedSummary, setCopiedSummary] = useState(false);
+
+  // Search & Filter state for Assessment Results table
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'SHORTLISTED' | 'NOT_SHORTLISTED'>('ALL');
 
   // Form state
   const [fullName, setFullName] = useState('');
@@ -205,10 +220,70 @@ export default function AdminDashboard() {
     }
   };
 
+  const openAnswersAudit = async (result: ResultItem) => {
+    setSelectedAuditStudent(result);
+    setLoadingAudit(true);
+    setAuditData(null);
+    setAuditFilter('ALL');
+    setCopiedSummary(false);
+
+    try {
+      const targetId = result.sessionId || result._id;
+      const res = await fetch(`/api/admin/student-answers/${targetId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAuditData(data.studentAnswer);
+      }
+    } catch (err) {
+      console.error('Failed to fetch student answer audit:', err);
+    } finally {
+      setLoadingAudit(false);
+    }
+  };
+
+  const copyFacultySummary = () => {
+    if (!auditData) return;
+    const text = `DATA VALLEY ASSESSMENT — CANDIDATE PERFORMANCE & FACULTY AUDIT
+======================================================================
+Student Name: ${auditData.studentName}
+Email: ${auditData.studentEmail}
+Status: ${auditData.shortlistStatus === 'SHORTLISTED' ? 'QUALIFIED / SHORTLISTED' : 'NOT SHORTLISTED (FAILED)'}
+Marks Obtained: ${auditData.marksObtained}/60 (${auditData.percentage}%)
+Qualification Cutoff: 35/60 (58.3%)
+
+----------------------------------------------------------------------
+${auditData.whyFailedReason || ''}
+----------------------------------------------------------------------
+
+Question Breakdown:
+• Correct: ${auditData.correctAnswers || 0}
+• Incorrect: ${auditData.wrongAnswers || 0}
+• Unanswered: ${auditData.unansweredQuestions || 0}
+
+Verified & Exported from Data Valley Platform for Institutional Faculty Review.
+======================================================================`;
+    navigator.clipboard.writeText(text);
+    setCopiedSummary(true);
+    setTimeout(() => setCopiedSummary(false), 2500);
+  };
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
   };
+
+  // Filter assessment results in real-time
+  const filteredResults = results.filter((r) => {
+    const name = (r.candidateName || r.candidateId?.fullName || '').toLowerCase();
+    const candEmail = (r.candidateEmail || r.candidateId?.email || '').toLowerCase();
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch = !q || name.includes(q) || candEmail.includes(q);
+    const matchesStatus =
+      statusFilter === 'ALL' ||
+      (statusFilter === 'SHORTLISTED' && r.shortlistStatus === 'SHORTLISTED') ||
+      (statusFilter === 'NOT_SHORTLISTED' && r.shortlistStatus === 'NOT_SHORTLISTED');
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -370,17 +445,78 @@ export default function AdminDashboard() {
             )}
           </section>
 
-          {/* Assessment Results Column */}
+              {/* Assessment Results Column */}
           <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:col-span-2">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-              <FileText size={18} className="text-slate-700" />
-              <h2 className="text-base font-bold text-slate-800">
-                Assessment Results ({results.length})
-              </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <FileText size={18} className="text-slate-700" />
+                <h2 className="text-base font-bold text-slate-800">
+                  Assessment Results ({filteredResults.length}{filteredResults.length !== results.length ? ` of ${results.length}` : ''})
+                </h2>
+              </div>
+            </div>
+
+            {/* Quick Candidate Search & Status Filter for Faculty Inquiries */}
+            <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between mb-4">
+              <div className="relative flex-1">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search student by name or college email (e.g. for faculty inquiries)..."
+                  className="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-slate-900 focus:bg-white"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('ALL')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                    statusFilter === 'ALL'
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  All ({results.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('SHORTLISTED')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                    statusFilter === 'SHORTLISTED'
+                      ? 'bg-emerald-700 text-white'
+                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  }`}
+                >
+                  Passed
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('NOT_SHORTLISTED')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
+                    statusFilter === 'NOT_SHORTLISTED'
+                      ? 'bg-rose-700 text-white'
+                      : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'
+                  }`}
+                >
+                  Failed
+                </button>
+              </div>
             </div>
 
             {results.length === 0 ? (
               <p className="text-sm text-slate-400 py-4 text-center">No assessment submissions yet.</p>
+            ) : filteredResults.length === 0 ? (
+              <p className="text-sm text-slate-400 py-6 text-center">No matching candidate found for &quot;{searchQuery}&quot;.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
@@ -397,7 +533,7 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {results.map((r) => (
+                    {filteredResults.map((r) => (
                       <tr key={r._id} className="hover:bg-slate-50/50">
                         <td className="p-3">
                           <p className="font-semibold text-slate-800 leading-tight">
@@ -489,6 +625,14 @@ export default function AdminDashboard() {
                         </td>
                         <td className="p-3">
                           <div className="flex items-center gap-1.5 whitespace-nowrap">
+                            {/* ANSWERS AUDIT BUTTON FOR FACULTY INQUIRY */}
+                            <button
+                              onClick={() => openAnswersAudit(r)}
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 transition-colors cursor-pointer shadow-xs"
+                              title="Compare Student Answers vs Actual Key for College Faculty Review"
+                            >
+                              <FileCheck2 size={12} /> Answers Audit
+                            </button>
                             {r.sectionBreakdown && r.sectionBreakdown.length > 0 && (
                               <button
                                 onClick={() => setSelectedBreakdown({
@@ -743,6 +887,322 @@ export default function AdminDashboard() {
                 className="px-4 py-2 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STUDENT COMPARATIVE ANSWERS AUDIT MODAL (FOR COLLEGE FACULTY INQUIRIES) */}
+      {selectedAuditStudent !== null && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col border border-slate-200 overflow-hidden font-sans">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                    Student Answers & Comparative Evaluation Audit
+                  </h3>
+                  {auditData && (
+                    <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                      auditData.shortlistStatus === 'SHORTLISTED'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-rose-100 text-rose-800 border border-rose-300'
+                    }`}>
+                      {auditData.shortlistStatus === 'SHORTLISTED' ? 'QUALIFIED / SHORTLISTED' : 'FAILED / NOT SHORTLISTED'}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 font-mono">
+                  Candidate: <strong className="text-slate-800">{auditData?.studentName || selectedAuditStudent.candidateName || selectedAuditStudent.candidateId?.fullName}</strong> ({auditData?.studentEmail || selectedAuditStudent.candidateEmail || selectedAuditStudent.candidateId?.email})
+                  {selectedAuditStudent.submittedAt && (
+                    <span> · Submitted: {new Date(selectedAuditStudent.submittedAt).toLocaleString()}</span>
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedAuditStudent(null);
+                  setAuditData(null);
+                }}
+                className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {loadingAudit ? (
+              <div className="p-16 flex flex-col items-center justify-center text-slate-400 gap-3">
+                <Loader2 size={32} className="animate-spin text-slate-700" />
+                <p className="text-sm font-medium text-slate-600">Retrieving authoritative student answers and answer keys...</p>
+                <p className="text-xs text-slate-400">Querying collection: student_answers</p>
+              </div>
+            ) : !auditData ? (
+              <div className="p-12 text-center text-slate-500 text-sm">
+                No answer audit records found for this candidate.
+              </div>
+            ) : (
+              <div className="overflow-y-auto flex-1 p-6 space-y-6">
+                {/* 1. FACULTY INQUIRY RESOLUTION BANNER ("WHY DID HE FAIL / PASS?") */}
+                <div className={`rounded-xl border p-5 ${
+                  auditData.shortlistStatus === 'SHORTLISTED'
+                    ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
+                    : 'bg-rose-50/70 border-rose-200 text-rose-950'
+                }`}>
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-3 pb-3 border-b border-slate-200/60">
+                    <div className="flex items-center gap-2">
+                      <HelpCircle size={20} className={auditData.shortlistStatus === 'SHORTLISTED' ? 'text-emerald-700' : 'text-rose-700'} />
+                      <h4 className="text-sm font-bold tracking-tight">
+                        Faculty Inquiry Resolution: {auditData.shortlistStatus === 'SHORTLISTED' ? 'Why Did This Student Pass?' : 'Why Did This Student Fail?'}
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={copyFacultySummary}
+                        className="px-3 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      >
+                        {copiedSummary ? (
+                          <>
+                            <Check size={13} className="text-emerald-600" />
+                            <span className="text-emerald-600">Copied to Clipboard!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={13} />
+                            <span>Copy Summary for Faculty</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => window.print()}
+                        className="px-3 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      >
+                        <Printer size={13} />
+                        <span>Print Report</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Summary Metric Pills */}
+                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 mb-4 text-center">
+                    <div className="bg-white/90 rounded-lg p-2.5 border border-slate-200/80 shadow-2xs">
+                      <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Score</span>
+                      <span className="text-base font-bold text-slate-900">{auditData.marksObtained} / 60</span>
+                    </div>
+                    <div className="bg-white/90 rounded-lg p-2.5 border border-slate-200/80 shadow-2xs">
+                      <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Percentage</span>
+                      <span className="text-base font-bold text-slate-900">{auditData.percentage}%</span>
+                    </div>
+                    <div className="bg-white/90 rounded-lg p-2.5 border border-slate-200/80 shadow-2xs">
+                      <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Passing Cutoff</span>
+                      <span className="text-base font-bold text-slate-900">{auditData.cutoffMarks || 35} / 60</span>
+                    </div>
+                    <div className="bg-white/90 rounded-lg p-2.5 border border-emerald-200 shadow-2xs">
+                      <span className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider block">Correct</span>
+                      <span className="text-base font-bold text-emerald-700">{auditData.correctAnswers || 0}</span>
+                    </div>
+                    <div className="bg-white/90 rounded-lg p-2.5 border border-rose-200 shadow-2xs">
+                      <span className="text-[10px] text-rose-700 font-semibold uppercase tracking-wider block">Wrong</span>
+                      <span className="text-base font-bold text-rose-700">{auditData.wrongAnswers || 0}</span>
+                    </div>
+                    <div className="bg-white/90 rounded-lg p-2.5 border border-slate-200 shadow-2xs">
+                      <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Unanswered</span>
+                      <span className="text-base font-bold text-slate-600">{auditData.unansweredQuestions || 0}</span>
+                    </div>
+                  </div>
+
+                  {/* Narrative Justification */}
+                  <div className="bg-white/95 rounded-lg p-3.5 border border-slate-200 text-xs font-sans whitespace-pre-line text-slate-700 leading-relaxed shadow-2xs">
+                    {auditData.whyFailedReason}
+                  </div>
+                </div>
+
+                {/* 2. QUESTION FILTER TABS */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setAuditFilter('ALL')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        auditFilter === 'ALL'
+                          ? 'bg-slate-900 text-white shadow-xs'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                      }`}
+                    >
+                      All Questions ({auditData.questionAudits?.length || 60})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAuditFilter('WRONG')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        auditFilter === 'WRONG'
+                          ? 'bg-rose-600 text-white shadow-xs'
+                          : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'
+                      }`}
+                    >
+                      <XCircle size={13} />
+                      Wrong Answers Only ({auditData.questionAudits?.filter((q: any) => q.status === 'WRONG').length || 0})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAuditFilter('UNANSWERED')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        auditFilter === 'UNANSWERED'
+                          ? 'bg-slate-700 text-white shadow-xs'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                      }`}
+                    >
+                      <MinusCircle size={13} />
+                      Unanswered ({auditData.questionAudits?.filter((q: any) => q.status === 'UNANSWERED').length || 0})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAuditFilter('CORRECT')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        auditFilter === 'CORRECT'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
+                      }`}
+                    >
+                      <CheckCircle2 size={13} />
+                      Correct Answers ({auditData.questionAudits?.filter((q: any) => q.status === 'CORRECT').length || 0})
+                    </button>
+                  </div>
+                  <span className="text-xs text-slate-400 font-mono">
+                    Showing {
+                      auditData.questionAudits?.filter((q: any) => {
+                        if (auditFilter === 'WRONG') return q.status === 'WRONG';
+                        if (auditFilter === 'CORRECT') return q.status === 'CORRECT';
+                        if (auditFilter === 'UNANSWERED') return q.status === 'UNANSWERED';
+                        return true;
+                      }).length || 0
+                    } questions
+                  </span>
+                </div>
+
+                {/* 3. COMPARATIVE QUESTION AUDIT CARDS */}
+                <div className="space-y-4">
+                  {auditData.questionAudits
+                    ?.filter((q: any) => {
+                      if (auditFilter === 'WRONG') return q.status === 'WRONG';
+                      if (auditFilter === 'CORRECT') return q.status === 'CORRECT';
+                      if (auditFilter === 'UNANSWERED') return q.status === 'UNANSWERED';
+                      return true;
+                    })
+                    .map((q: any) => (
+                      <div
+                        key={q.questionId}
+                        className={`rounded-xl border p-4.5 space-y-3 transition-shadow ${
+                          q.status === 'CORRECT'
+                            ? 'bg-white border-emerald-200 shadow-2xs'
+                            : q.status === 'WRONG'
+                            ? 'bg-white border-rose-200 shadow-2xs'
+                            : 'bg-slate-50/60 border-slate-200'
+                        }`}
+                      >
+                        {/* Question Metadata Header */}
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-2 py-0.5 rounded-md text-xs font-bold font-mono bg-slate-900 text-white">
+                              Q{q.questionNumber || q.questionId}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                              {q.category}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-slate-100 text-slate-500">
+                              {q.type}
+                            </span>
+                          </div>
+
+                          <div>
+                            {q.status === 'CORRECT' ? (
+                              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                                <CheckCircle2 size={13} /> Correct (+1 Mark)
+                              </span>
+                            ) : q.status === 'WRONG' ? (
+                              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1">
+                                <XCircle size={13} /> Incorrect (0 Marks)
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-300 flex items-center gap-1">
+                                <MinusCircle size={13} /> Not Attempted (0 Marks)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Question Prompt */}
+                        <p className="text-sm font-semibold text-slate-800 leading-snug">
+                          {q.questionText}
+                        </p>
+
+                        {/* Side-by-Side Comparison Box */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                          {/* Student Placed Answer */}
+                          <div className={`rounded-lg p-3 border text-xs space-y-1 ${
+                            q.status === 'CORRECT'
+                              ? 'bg-emerald-50/60 border-emerald-200 text-emerald-950'
+                              : q.status === 'WRONG'
+                              ? 'bg-rose-50/70 border-rose-300 text-rose-950'
+                              : 'bg-slate-100 border-slate-200 text-slate-500'
+                          }`}>
+                            <div className="flex items-center justify-between font-bold text-[11px] uppercase tracking-wider">
+                              <span className="flex items-center gap-1">
+                                {q.status === 'CORRECT' ? <CheckCircle2 size={12} className="text-emerald-700" /> : q.status === 'WRONG' ? <XCircle size={12} className="text-rose-700" /> : <MinusCircle size={12} />}
+                                Student Selected Answer
+                              </span>
+                              <span>{q.marksAwarded} / {q.maxMarks || 1} mark</span>
+                            </div>
+                            <p className="font-mono font-medium text-xs break-words leading-relaxed">
+                              {q.studentAnswer || 'Not Attempted by Candidate'}
+                            </p>
+                          </div>
+
+                          {/* Data Valley Actual Authoritative Answer */}
+                          <div className="rounded-lg p-3 border bg-emerald-50/70 border-emerald-300 text-emerald-950 text-xs space-y-1">
+                            <div className="flex items-center justify-between font-bold text-[11px] uppercase tracking-wider text-emerald-800">
+                              <span className="flex items-center gap-1">
+                                <Check size={12} className="text-emerald-700 font-bold" />
+                                Data Valley Actual Answer Key
+                              </span>
+                              <span>Expected: 1 mark</span>
+                            </div>
+                            <p className="font-mono font-semibold text-xs break-words leading-relaxed text-emerald-900">
+                              {q.actualAnswer}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Authoritative Explanation */}
+                        {q.explanation && (
+                          <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5 text-xs text-slate-600 flex items-start gap-2">
+                            <span className="font-bold text-slate-700 whitespace-nowrap">Explanation:</span>
+                            <span className="leading-relaxed">{q.explanation}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+              <span className="text-xs text-slate-400">
+                Data Valley Institutional Assessment Audit System · Authorized Admin Personnel Only
+              </span>
+              <button
+                onClick={() => {
+                  setSelectedAuditStudent(null);
+                  setAuditData(null);
+                }}
+                className="px-4 py-2 text-xs font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Close Audit
               </button>
             </div>
           </div>

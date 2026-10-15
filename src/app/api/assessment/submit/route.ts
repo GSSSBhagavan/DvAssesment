@@ -6,6 +6,7 @@ import { Candidate } from '@/server/models/Candidate';
 import { StudentAnswer } from '@/server/models/StudentAnswer';
 import { recordStudentEvaluationResult } from '@/server/models/StudentResult';
 import { evaluateAssessmentWithDb } from '@/server/utils/evaluation';
+import { auditStudentAnswersWithDb } from '@/server/utils/studentAnswerAuditor';
 import { ProctoringRecord } from '@/server/models/ProctoringRecord';
 
 export const POST = requireAuth(async (req: Request, session: JwtPayload) => {
@@ -85,20 +86,46 @@ export const POST = requireAuth(async (req: Request, session: JwtPayload) => {
       // Body was empty or not JSON, evaluate existing activeSession.answers from MongoDB
     }
 
-    // 6. Save final candidate answers to student_answers collection
+    // 6. Perform real-time authoritative audit (Student Answers vs Actual Data Valley Answer Keys)
+    let auditResult;
     try {
+      auditResult = await auditStudentAnswersWithDb(activeSession.answers);
+    } catch (auditErr) {
+      console.warn('[Submit] Fallback on audit generation error:', auditErr);
+    }
+
+    // 7. Save final candidate answers, comparative audits & faculty justification to student_answers collection
+    try {
+      const updateData: Record<string, any> = {
+        studentName,
+        studentEmail,
+        status: 'SUBMITTED',
+        submittedAt: now,
+        answers: activeSession.answers,
+        totalAnswered: activeSession.answers.length,
+        updatedAt: now
+      };
+
+      if (auditResult) {
+        updateData.questionAudits = auditResult.questionAudits;
+        updateData.marksObtained = auditResult.marksObtained;
+        updateData.totalMarks = auditResult.totalMarks;
+        updateData.percentage = auditResult.percentage;
+        updateData.correctAnswers = auditResult.correctAnswers;
+        updateData.wrongAnswers = auditResult.wrongAnswers;
+        updateData.unansweredQuestions = auditResult.unansweredQuestions;
+        updateData.cutoffMarks = auditResult.cutoffMarks;
+        updateData.shortlistStatus = auditResult.shortlistStatus;
+        updateData.isPassed = auditResult.isPassed;
+        updateData.whyFailedReason = auditResult.whyFailedReason;
+        updateData.sectionBreakdown = auditResult.sectionBreakdown;
+        updateData.evaluatedAt = auditResult.evaluatedAt;
+      }
+
       await StudentAnswer.findOneAndUpdate(
         { candidateId: session.candidateId, sessionId: activeSession._id },
         {
-          $set: {
-            studentName,
-            studentEmail,
-            status: 'SUBMITTED',
-            submittedAt: now,
-            answers: activeSession.answers,
-            totalAnswered: activeSession.answers.length,
-            updatedAt: now
-          },
+          $set: updateData,
           $setOnInsert: {
             startedAt: activeSession.startedAt
           }
@@ -109,7 +136,7 @@ export const POST = requireAuth(async (req: Request, session: JwtPayload) => {
       console.warn('[Submit] Error saving to student_answers:', saveAnswerErr);
     }
 
-    // 7. Calculate score using realtime authoritative dv_answers collection from MongoDB
+    // 8. Calculate score using realtime authoritative dv_answers collection from MongoDB
     // MCQ: +1 for correct option, 0 for wrong (no negative marking)
     // Git: +1 for regex match, 0 for wrong
     const evaluation = await evaluateAssessmentWithDb(activeSession.answers);
