@@ -108,31 +108,32 @@ export default function QuestionRenderer() {
   };
 
   const renderWorkspace = () => {
+    const qNum = currentIndex + 1;
     if (question.category.includes('Email')) {
       if (question.type === 'EMAIL_COMPOSE') {
-        return <EmailComposeWorkspace question={question} />;
+        return <EmailComposeWorkspace question={question} questionNumber={qNum} />;
       }
-      return <EmailWorkspace question={question} />;
+      return <EmailWorkspace question={question} questionNumber={qNum} />;
     }
     if (question.category.includes('Communication')) {
       if (question.type === 'MULTIPLE_CHOICE') {
-        return <EmailWorkspace question={question} />;
+        return <EmailWorkspace question={question} questionNumber={qNum} />;
       }
       if (question.type === 'FREE_TEXT') {
-        return <PassageWorkspace question={question} />;
+        return <PassageWorkspace question={question} questionNumber={qNum} />;
       }
-      return <VoiceWorkspace question={question} />;
+      return <VoiceWorkspace question={question} questionNumber={qNum} />;
     }
     if (question.category.includes('GitHub') || question.category.includes('Version Control')) {
       if (question.type === 'MULTIPLE_CHOICE') {
-        return <ImageMCQWorkspace question={question} />;
+        return <ImageMCQWorkspace question={question} questionNumber={qNum} />;
       }
-      return <GitWorkspace question={question} />;
+      return <GitWorkspace question={question} questionNumber={qNum} />;
     }
-    if (question.category.includes('Code Snapshots') || question.category.includes('Analysis')) return <ImageMCQWorkspace question={question} />;
-    if (question.category.includes('Technical Aptitude')) return <ImageMCQWorkspace question={question} />;
-    if (question.category.includes('Architecture')) return <ArchitectureWorkspace question={question} />;
-    return <CodeWorkspace question={question} />;
+    if (question.category.includes('Code Snapshots') || question.category.includes('Analysis')) return <ImageMCQWorkspace question={question} questionNumber={qNum} />;
+    if (question.category.includes('Technical Aptitude')) return <ImageMCQWorkspace question={question} questionNumber={qNum} />;
+    if (question.category.includes('Architecture')) return <ArchitectureWorkspace question={question} questionNumber={qNum} />;
+    return <CodeWorkspace question={question} questionNumber={qNum} />;
   };
 
   const unansweredCount = currentSectionStats.total - currentSectionStats.answered;

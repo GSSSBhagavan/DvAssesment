@@ -6,10 +6,12 @@ import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
 import { getOrderedQuestions } from '@/lib/safe-questions';
 
-export default function EmailWorkspace({ question }: { question: any }) {
-  const { setAnswer, answers, questionOrder } = useAssessmentState();
+export default function EmailWorkspace({ question, questionNumber }: { question: any; questionNumber?: number }) {
+  const { setAnswer, answers, currentIndex: globalIndex, questionOrder } = useAssessmentState();
   const selected = answers[question.id];
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const displayNum = questionNumber ?? (globalIndex + 1);
 
   const questions = useMemo(() => getOrderedQuestions(questionOrder), [questionOrder]);
 
@@ -75,7 +77,7 @@ export default function EmailWorkspace({ question }: { question: any }) {
         {/* Header and Question combined to save space */}
         <div className="flex flex-col gap-2 shrink-0">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">QUESTION {String(question.id).padStart(2, '0')}</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">QUESTION {String(displayNum).padStart(2, '0')}</span>
             <span className="text-[10px] font-bold text-[#DC2626] uppercase tracking-widest bg-[#FEF2F2] px-2 py-0.5 rounded">~1 MIN</span>
           </div>
           <h2 className="text-[17px] md:text-lg font-semibold text-slate-900 leading-snug">{question.question}</h2>

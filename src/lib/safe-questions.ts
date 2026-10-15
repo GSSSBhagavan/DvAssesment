@@ -323,260 +323,260 @@ export const assessmentData = [
     "id": 31,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will be the output of the following Python code?",
-    "image": "/q31-python-dict.svg",
+    "question": "What will this code print?",
+    "image": "/q31-js.svg",
     "options": [
-      "2 Alice",
-      "2 Charlie",
-      "4 Alice",
-      "3 Bob"
+      "15",
+      "105",
+      "5",
+      "Error"
     ]
   },
   {
     "id": 32,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will be the output of the following Python code?",
-    "image": "/q32-python-scope.svg",
+    "question": "What will the Python program print?",
+    "image": "/q32-py.svg",
     "options": [
-      "[20]",
-      "TypeError: target cannot be modified",
-      "[10, 20]",
-      "[[10], [20]]"
+      "2",
+      "3",
+      "4",
+      "Error"
     ]
   },
   {
     "id": 33,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will the following Python script print?",
-    "image": "/q33-python-slice.svg",
+    "question": "What will be the output of the following Java program?",
+    "image": "/q33-java-conditional.svg",
     "options": [
-      "DAEH",
-      "CDEM",
-      "MEDC",
-      "HEAD"
+      "HIGH: 6",
+      "LOW: 6",
+      "HIGH: 6.75",
+      "LOW: 7"
     ]
   },
   {
     "id": 34,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will be the exact output printed by this Python snippet?",
-    "image": "/q34-python-except.svg",
+    "question": "What will be the output of the following Java program?",
+    "image": "/q34-java-loop-method.svg",
     "options": [
-      "parsed-done",
-      "parsed-success-done",
-      "parsed-error-done",
-      "success-done"
+      "10",
+      "15",
+      "18",
+      "30"
     ]
   },
   {
     "id": 35,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What does the following Python program output?",
-    "image": "/q35-python-oop.svg",
+    "question": "What will be the output of the following Java program?",
+    "image": "/q35-java-oop-constructor.svg",
     "options": [
-      "AuthAPI:online:encrypted",
-      "AuthAPI:encrypted",
-      "Service:online:encrypted",
-      "AttributeError: super() has no method status"
+      "Untitled - 100",
+      "Untitled - 120",
+      "null - 120",
+      "Compilation error: constructor chaining not supported"
     ]
   },
   {
     "id": 36,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will the following Java code print?",
-    "image": "/q36-java-string.svg",
+    "question": "What does this React component return?",
+    "image": "/q36-react.svg",
     "options": [
-      "DataPlatform DataValley",
-      "DataValleyPlatform DataValley",
-      "Data DataValley",
-      "DataPlatform DataPlatform"
+      "A database query",
+      "An HTML heading rendered through JSX",
+      "A REST API response",
+      "A Node.js server"
     ]
   },
   {
     "id": 37,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will be the output of the following Java program?",
-    "image": "/q37-java-loop.svg",
+    "question": "What happens when the button is clicked?",
+    "image": "/q37-state.svg",
     "options": [
-      "12",
-      "14",
-      "30",
-      "20"
+      "The server restarts",
+      "The count state increases by 1",
+      "The database is deleted",
+      "The browser closes"
     ]
   },
   {
     "id": 38,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What does the following Java code display when executed?",
-    "image": "/q38-java-dispatch.svg",
+    "question": "What is this frontend code primarily doing?",
+    "image": "/q38-fetch.svg",
     "options": [
-      "Base ",
-      "Base Fast ",
-      "Compilation error: Cannot assign FastProcessor to BaseProcessor",
-      "Fast "
+      "Calling an API and processing the response",
+      "Creating a database table",
+      "Deploying the application",
+      "Compiling Python code"
     ]
   },
   {
     "id": 39,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will the following Java method return when invoked?",
-    "image": "/q39-java-finally.svg",
+    "question": "What is the primary purpose of this request?",
+    "image": "/q39-post.svg",
     "options": [
-      "5",
-      "-1",
-      "99",
-      "ArithmeticException"
+      "Retrieve an existing user",
+      "Create/send new user data",
+      "Delete the server",
+      "Download a CSS file"
     ]
   },
   {
     "id": 40,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will be the output of the following Java program?",
-    "image": "/q40-java-collection.svg",
+    "question": "What does HTTP 200 generally indicate?",
+    "image": "/q40-200.svg",
     "options": [
-      "4 4",
-      "3 4",
-      "3 3",
-      "2 4"
+      "Authentication failed",
+      "Request was successfully processed",
+      "Server crashed",
+      "Resource was permanently deleted"
     ]
   },
   {
     "id": 41,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "In what order will the numbers be logged to the console by this JavaScript code?",
-    "image": "/q41-js-event-loop.svg",
+    "question": "What is this backend route designed to do?",
+    "image": "/q41-express.svg",
     "options": [
-      "1, 2, 3, 4",
-      "1, 3, 4, 2",
-      "1, 4, 2, 3",
-      "1, 4, 3, 2"
+      "Return users from the database",
+      "Render CSS",
+      "Create a Git branch",
+      "Deploy the application"
     ]
   },
   {
     "id": 42,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will be the value displayed for count after a user clicks the button once?",
-    "image": "/q42-react-state.svg",
+    "question": "What is the most likely meaning of this response?",
+    "image": "/q42-401.svg",
     "options": [
-      "1",
-      "2",
-      "3",
-      "4"
+      "The request was successful",
+      "Authentication/authorization credentials are missing or invalid",
+      "The database table does not exist",
+      "The frontend CSS has a syntax error"
     ]
   },
   {
     "id": 43,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "What will be logged to the server console when a GET request hits /data?",
-    "image": "/q43-express-middleware.svg",
+    "question": "What does this query do?",
+    "image": "/q43-sql1.svg",
     "options": [
-      "M1-Start -> Handler -> M1-End",
-      "M1-Start -> M1-End -> Handler",
-      "Handler -> M1-Start -> M1-End",
-      "M1-Start -> Handler"
+      "Deletes user 10",
+      "Retrieves name and email for user 10",
+      "Creates a new user",
+      "Updates all users"
     ]
   },
   {
     "id": 44,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "When an incoming request body contains syntactically valid JSON that fails data type validation, which HTTP status code is most standard?",
-    "image": "/q44-http-validation.svg",
+    "question": "What operation does this SQL statement perform?",
+    "image": "/q44-sql2.svg",
     "options": [
-      "401 Unauthorized (Missing authentication token)",
-      "422 Unprocessable Entity (Client payload semantic validation failure)",
-      "403 Forbidden (Insufficient role permissions)",
-      "502 Bad Gateway (Upstream proxy communication failure)"
+      "SELECT",
+      "DELETE",
+      "INSERT",
+      "UPDATE"
     ]
   },
   {
     "id": 45,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "When a browser sends a cross-origin request with custom headers like Authorization and Content-Type: application/json, what preflight request does it automatically send first?",
-    "image": "/q45-cors-preflight.svg",
+    "question": "How is this data primarily represented?",
+    "image": "/q45-mongo.svg",
     "options": [
-      "OPTIONS request with Access-Control-Request-Method headers",
-      "GET request with Sec-Fetch-Mode: navigate",
-      "HEAD request without body",
-      "POST request with an empty JSON payload"
+      "Relational row only",
+      "Document-style data",
+      "CSS object",
+      "HTTP header"
     ]
   },
   {
     "id": 46,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "Which SQL clause must replace [ ??? ] to filter groups having more than 3 completed submissions?",
-    "image": "/q46-sql-having.svg",
+    "question": "Why is the backend commonly placed between the frontend and database?",
+    "image": "/q46-arch.svg",
     "options": [
-      "WHERE",
-      "QUALIFY",
-      "HAVING",
-      "ORDER BY"
+      "To handle business logic and control database access",
+      "To replace HTML",
+      "To increase monitor resolution",
+      "To remove the need for authentication"
     ]
   },
   {
     "id": 47,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "Given the students table (4 rows) and scores table (3 rows with matching student_ids), what does a LEFT JOIN on student_id guarantee?",
-    "image": "/q47-sql-leftjoin.svg",
+    "question": "What is a common purpose of Vercel in this architecture?",
+    "image": "/q47-vercel.svg",
     "options": [
-      "Only the 3 students with matching score records will be returned",
-      "The query fails with a foreign key constraint violation",
-      "Exactly 12 rows representing the cartesian product will be returned",
-      "All 4 students will be returned, with NULL in the score column for unmatched student 104"
+      "Hosting/deploying the web application",
+      "Designing database schemas",
+      "Writing Python automatically",
+      "Replacing Git"
     ]
   },
   {
     "id": 48,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "A PostgreSQL table has a standard B-Tree index on the column created_at. Which query CANNOT effectively utilize this index?",
-    "image": "/q48-db-indexing.svg",
+    "question": "In this architecture, what is the Render service most likely responsible for?",
+    "image": "/q48-render.svg",
     "options": [
-      "Query 1, because range operators (> and <) invalidate B-Tree indexes",
-      "Query 2, because wrapping the indexed column in a function prevents standard index scans",
-      "Both queries will execute an index scan with identical efficiency",
-      "Neither query can use the index because B-Tree indexes only support integer primary keys"
+      "Running the backend/API service",
+      "Editing images",
+      "Managing browser bookmarks",
+      "Replacing the frontend"
     ]
   },
   {
     "id": 49,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "In modern Next.js deployment, which environment variable is safely accessible ONLY on the server runtime and NEVER exposed to client browser bundles?",
-    "image": "/q49-env-security.svg",
+    "question": "What is the main role of Netlify in this architecture?",
+    "image": "/q49-netlify.svg",
     "options": [
-      "MONGODB_URI",
-      "NEXT_PUBLIC_API_URL",
-      "NEXT_PUBLIC_APP_TITLE",
-      "NEXT_PUBLIC_ENABLE_PROCTORING"
+      "Hosting/deploying the frontend application",
+      "Acting as the database",
+      "Executing SQL queries directly from the browser",
+      "Replacing the backend API"
     ]
   },
   {
     "id": 50,
     "type": "MULTIPLE_CHOICE",
     "category": "Code Snapshots & Output Analysis",
-    "question": "In the production deployment architecture diagram below, what is the primary role of the Reverse Proxy / Load Balancer?",
-    "image": "/q50-arch-loadbalancer.svg",
+    "question": "A production web application is deployed using this architecture. Which statement best describes the design?",
+    "image": "/q50-prod.svg",
     "options": [
-      "Storing permanent transactional records and executing SQL queries",
-      "Compiling TypeScript code into client machine code inside the browser",
-      "Distributing incoming HTTP traffic across healthy backend instances to enable horizontal scaling",
-      "Replacing DNS servers by assigning physical MAC addresses to mobile clients"
+      "The browser directly controls the database",
+      "The frontend communicates with a backend API, which handles application logic and database access",
+      "Vercel is being used as the database",
+      "Render is replacing the user's browser"
     ]
   },
   {

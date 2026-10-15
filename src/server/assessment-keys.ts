@@ -153,103 +153,103 @@ export const answerKeys = [
   },
   {
     "id": 31,
-    "correctAnswer": "2 Alice",
-    "explanation": "The dictionary comprehension keeps entries with id >= 2. Sorting by score descending places Charlie (98, id 4) first and Alice (91, id 2) second. Length is 2 and name of index 1 is Alice."
+    "correctAnswer": "15",
+    "explanation": "const x = 10, y = 5; console.log(x + y) computes numeric addition yielding 15."
   },
   {
     "id": 32,
-    "correctAnswer": "[10, 20]",
-    "explanation": "Default arguments in Python are evaluated once at function definition time. Both function calls append to the same persistent default list instance."
+    "correctAnswer": "3",
+    "explanation": "len(numbers) calculates the total number of elements in the 3-item list."
   },
   {
     "id": 33,
-    "correctAnswer": "HEAD",
-    "explanation": "items[::-1] reverses to ['D', 'A', 'E', 'H']. items[-2:] slices ['E', 'H']. Then [::-1] reverses it to 'HE'. Adding 'A' + 'D' gives 'HEAD'."
+    "correctAnswer": "HIGH: 6",
+    "explanation": "In Java integer arithmetic, 15 % 4 evaluates to remainder 3, and 15 / 4 evaluates to integer quotient 3. Therefore, result = 3 + 3 = 6. Since 6 > 5 is true, the if branch executes and prints \"HIGH: 6\"."
   },
   {
     "id": 34,
-    "correctAnswer": "parsed-success-done",
-    "explanation": "int('42') succeeds, so the except block is skipped. The else block runs printing 'success', and the finally block always executes printing 'done'."
+    "correctAnswer": "18",
+    "explanation": "The process method iterates i from 1 to 5. The condition (i % 2 != 0) selects odd numbers: i = 1 (adds 1 * 2 = 2), i = 3 (adds 3 * 2 = 6), and i = 5 (adds 5 * 2 = 10). The final accumulated sum is 2 + 6 + 10 = 18."
   },
   {
     "id": 35,
-    "correctAnswer": "AuthAPI:online:encrypted",
-    "explanation": "super().status() invokes the parent Service.status() returning 'AuthAPI:online', to which ':encrypted' is appended."
+    "correctAnswer": "Untitled - 120",
+    "explanation": "Instantiating 'new Book()' invokes the no-argument constructor, which uses constructor chaining this(\"Untitled\", 100) to call the parameterized constructor. There, title is assigned \"Untitled\" and pages is calculated as 100 + 20 = 120. Calling b.display() prints \"Untitled - 120\"."
   },
   {
     "id": 36,
-    "correctAnswer": "Data DataValley",
-    "explanation": "Java Strings are immutable: s1.concat('Platform') creates a new string that is not reassigned to s1. StringBuilder is mutable, so sb.append('Valley') modifies sb."
+    "correctAnswer": "An HTML heading rendered through JSX",
+    "explanation": "React components return JSX describing the DOM structure, here an <h1> element."
   },
   {
     "id": 37,
-    "correctAnswer": "12",
-    "explanation": "The loop checks i % 2 == 0 (indices 0, 2, 4) with values 2, 4, 6. Their sum is 2 + 4 + 6 = 12."
+    "correctAnswer": "The count state increases by 1",
+    "explanation": "The click handler calls setCount(count + 1) updating component state."
   },
   {
     "id": 38,
-    "correctAnswer": "Fast ",
-    "explanation": "In Java, instance methods are overridden and dispatched dynamically based on the actual runtime object (FastProcessor), printing 'Fast '."
+    "correctAnswer": "Calling an API and processing the response",
+    "explanation": "fetch initiates an HTTP request and parses JSON response data."
   },
   {
     "id": 39,
-    "correctAnswer": "99",
-    "explanation": "A return statement in a finally block takes precedence and overrides any return value or pending unhandled exception from the try block."
+    "correctAnswer": "Create/send new user data",
+    "explanation": "HTTP POST is standard for creating new entities and sending payload bodies."
   },
   {
     "id": 40,
-    "correctAnswer": "3 4",
-    "explanation": "HashSet enforces element uniqueness, discarding the duplicate 'A' (size 3), while ArrayList allows duplicates and retains all 4 elements (size 4)."
+    "correctAnswer": "Request was successfully processed",
+    "explanation": "HTTP 200 OK signals successful completion of the requested operation."
   },
   {
     "id": 41,
-    "correctAnswer": "1, 4, 3, 2",
-    "explanation": "Synchronous code runs first (1, 4). Microtasks (Promise.then) run next (3). Macrotasks (setTimeout) execute in the next tick (2)."
+    "correctAnswer": "Return users from the database",
+    "explanation": "The Express GET route queries the database and returns JSON to the client."
   },
   {
     "id": 42,
-    "correctAnswer": "3",
-    "explanation": "Functional updates with prev => prev + 1 properly queue and accumulate sequential state changes, yielding 0 + 1 + 1 + 1 = 3."
+    "correctAnswer": "Authentication/authorization credentials are missing or invalid",
+    "explanation": "HTTP 401 Unauthorized indicates unauthenticated or invalid credential state."
   },
   {
     "id": 43,
-    "correctAnswer": "M1-Start -> Handler -> M1-End",
-    "explanation": "Express middleware awaits next(), which delegates downstream to the route handler and then resumes execution after the handler resolves."
+    "correctAnswer": "Retrieves name and email for user 10",
+    "explanation": "SELECT queries specific columns filtered by primary key ID."
   },
   {
     "id": 44,
-    "correctAnswer": "422 Unprocessable Entity (Client payload semantic validation failure)",
-    "explanation": "HTTP 422 Unprocessable Entity is standard when the syntax of a request payload is valid but semantic domain validation fails."
+    "correctAnswer": "INSERT",
+    "explanation": "INSERT INTO writes new records into relational database tables."
   },
   {
     "id": 45,
-    "correctAnswer": "OPTIONS request with Access-Control-Request-Method headers",
-    "explanation": "Non-simple CORS requests require the browser to dispatch an HTTP OPTIONS preflight request before sending the actual request."
+    "correctAnswer": "Document-style data",
+    "explanation": "MongoDB models data as flexible JSON/BSON document structures."
   },
   {
     "id": 46,
-    "correctAnswer": "HAVING",
-    "explanation": "In SQL, the HAVING clause is required to filter groups produced by GROUP BY based on aggregated calculations (COUNT(*) > 3)."
+    "correctAnswer": "To handle business logic and control database access",
+    "explanation": "Application servers isolate business rules, authentication, and secure database connections."
   },
   {
     "id": 47,
-    "correctAnswer": "All 4 students will be returned, with NULL in the score column for unmatched student 104",
-    "explanation": "A LEFT JOIN preserves every row from the left table; columns from the right table are filled with NULL when no join match exists."
+    "correctAnswer": "Hosting/deploying the web application",
+    "explanation": "Vercel is an edge hosting and deployment platform for modern web frameworks."
   },
   {
     "id": 48,
-    "correctAnswer": "Query 2, because wrapping the indexed column in a function prevents standard index scans",
-    "explanation": "Applying an arbitrary function like DATE() or LOWER() to an indexed column makes the expression non-SARGable, forcing a full table scan unless a functional index exists."
+    "correctAnswer": "Running the backend/API service",
+    "explanation": "Render provides managed runtime hosting for web services and APIs."
   },
   {
     "id": 49,
-    "correctAnswer": "MONGODB_URI",
-    "explanation": "In Next.js, only environment variables prefixed with NEXT_PUBLIC_ are bundled into client code. Variables without the prefix remain private to server runtimes."
+    "correctAnswer": "Hosting/deploying the frontend application",
+    "explanation": "Netlify hosts and serves static assets and client-side single page applications."
   },
   {
     "id": 50,
-    "correctAnswer": "Distributing incoming HTTP traffic across healthy backend instances to enable horizontal scaling",
-    "explanation": "A reverse proxy / load balancer distributes incoming requests across a cluster of backend servers, preventing bottlenecks and increasing availability."
+    "correctAnswer": "The frontend communicates with a backend API, which handles application logic and database access",
+    "explanation": "Tiered architecture separates client presentation, server business logic, and persistence."
   },
   {
     "id": 51,

@@ -3,8 +3,9 @@ import { useAssessmentState } from '@/hooks/useAssessmentState';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
-export default function ArchitectureWorkspace({ question }: { question: any }) {
-  const { setAnswer, answers } = useAssessmentState();
+export default function ArchitectureWorkspace({ question, questionNumber }: { question: any; questionNumber?: number }) {
+  const { setAnswer, answers, currentIndex } = useAssessmentState();
+  const displayNum = questionNumber ?? (currentIndex + 1);
   const currentAnswer = answers[question.id] || '';
   
   const labels = ['A', 'B', 'C', 'D', 'E'];
@@ -16,7 +17,7 @@ export default function ArchitectureWorkspace({ question }: { question: any }) {
         {/* Mission Context Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">MISSION {String(question.id).padStart(2, '0')}</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">QUESTION {String(displayNum).padStart(2, '0')}</span>
             <span className="text-[10px] font-bold text-[#DC2626] uppercase tracking-widest bg-[#FEF2F2] px-2 py-0.5 rounded">SYSTEM DESIGN</span>
           </div>
           <h2 className="text-[17px] md:text-lg font-semibold text-slate-900 leading-snug">{question.question}</h2>

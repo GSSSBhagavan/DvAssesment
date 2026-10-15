@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
-export default function EmailComposeWorkspace({ question }: { question: any }) {
-  const { setAnswer, answers } = useAssessmentState();
+export default function EmailComposeWorkspace({ question, questionNumber }: { question: any; questionNumber?: number }) {
+  const { setAnswer, answers, currentIndex } = useAssessmentState();
+  const displayNum = questionNumber ?? (currentIndex + 1);
 
   const parseAnswer = (val: string | undefined) => {
     if (!val) return { subject: '', body: '' };
@@ -74,7 +75,7 @@ export default function EmailComposeWorkspace({ question }: { question: any }) {
               WORKPLACE SCENARIO
             </div>
             <span className="ml-auto text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-200/50 px-2.5 py-1 rounded-full">
-              MISSION {String(question.id).padStart(2, '0')}
+              QUESTION {String(displayNum).padStart(2, '0')}
             </span>
           </div>
           <div className="p-8">

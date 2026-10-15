@@ -38,8 +38,9 @@ function Waveform({ isRecording, audioData }: { isRecording: boolean; audioData:
   );
 }
 
-export default function VoiceWorkspace({ question }: { question: any }) {
-  const { setAnswer, answers, setNavigationLocked } = useAssessmentState();
+export default function VoiceWorkspace({ question, questionNumber }: { question: any; questionNumber?: number }) {
+  const { setAnswer, answers, currentIndex, setNavigationLocked } = useAssessmentState();
+  const displayNum = questionNumber ?? (currentIndex + 1);
   const [answerData, setAnswerData] = useState<VoiceAnswer | null>(null);
 
   useEffect(() => {
@@ -274,7 +275,7 @@ export default function VoiceWorkspace({ question }: { question: any }) {
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-1 bg-white border border-slate-200 p-6 rounded-lg shadow-sm">
              <div className="flex items-center gap-3 mb-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-               <span className="text-slate-400">MISSION {String(question.id).padStart(2, '0')}</span>
+               <span className="text-slate-400">QUESTION {String(displayNum).padStart(2, '0')}</span>
                <span className="text-slate-300">|</span>
                <span className="text-[#DC2626]">SPOKEN RESPONSE</span>
                <span className="text-slate-300">|</span>

@@ -163,6 +163,10 @@ export async function exitFullscreenSafely(): Promise<void> {
   }
 }
 
+export function getActiveGlobalStream(): MediaStream | null {
+  return activeGlobalStream;
+}
+
 export function useCamera(autoStart = false): UseCameraReturn {
   const [stream, setStream] = useState<MediaStream | null>(autoStart ? activeGlobalStream : null);
   const [status, setStatus] = useState<CameraStatus>(
@@ -231,8 +235,14 @@ export function useCamera(autoStart = false): UseCameraReturn {
 
   const attachVideo = useCallback((videoElement: HTMLVideoElement | null) => {
     videoElementRef.current = videoElement;
-    if (videoElement && activeGlobalStream && activeGlobalStream.active) {
-      videoElement.srcObject = activeGlobalStream;
+    const currentStream = activeGlobalStream;
+    if (videoElement && currentStream && currentStream.active) {
+      if (videoElement.srcObject !== currentStream) {
+        videoElement.srcObject = currentStream;
+      }
+      videoElement.muted = true;
+      videoElement.defaultMuted = true;
+      videoElement.playsInline = true;
       videoElement.play().catch(() => {});
     }
   }, []);
@@ -252,7 +262,12 @@ export function useCamera(autoStart = false): UseCameraReturn {
       const label = activeGlobalStream.getVideoTracks()[0]?.label || 'Active Camera';
       setDeviceLabel(label);
       if (videoElementRef.current) {
-        videoElementRef.current.srcObject = activeGlobalStream;
+        if (videoElementRef.current.srcObject !== activeGlobalStream) {
+          videoElementRef.current.srcObject = activeGlobalStream;
+        }
+        videoElementRef.current.muted = true;
+        videoElementRef.current.defaultMuted = true;
+        videoElementRef.current.playsInline = true;
         videoElementRef.current.play().catch(() => {});
       }
       return activeGlobalStream;
@@ -262,14 +277,23 @@ export function useCamera(autoStart = false): UseCameraReturn {
     setError(null);
 
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 },
-          frameRate: { ideal: 24, max: 30 }
-        },
-        audio: false
-      });
+      let mediaStream: MediaStream | null = null;
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'user'
+          },
+          audio: false
+        });
+      } catch (firstErr) {
+        // Fallback to basic video constraint if laptop driver requires default resolution
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+      }
 
       if (!mountedRef.current) {
         mediaStream.getTracks().forEach((t) => {
@@ -310,6 +334,9 @@ export function useCamera(autoStart = false): UseCameraReturn {
 
       if (videoElementRef.current) {
         videoElementRef.current.srcObject = mediaStream;
+        videoElementRef.current.muted = true;
+        videoElementRef.current.defaultMuted = true;
+        videoElementRef.current.playsInline = true;
         videoElementRef.current.play().catch(() => {});
       }
 
@@ -369,28 +396,12 @@ export function useCamera(autoStart = false): UseCameraReturn {
 
     if (autoStart) {
       startCamera();
-    } else if (!autoStart && activeGlobalStream && activeStreamUsers <= 1) {
-      // If autoStart transitioned to false, stop camera
-      stopCamera();
     }
 
     return () => {
       mountedRef.current = false;
-      // Decrement reference count and stop if no users remaining
-      activeStreamUsers = Math.max(0, activeStreamUsers - 1);
-      if (activeStreamUsers === 0 && activeGlobalStream) {
-        try {
-          activeGlobalStream.getTracks().forEach((t) => {
-            try {
-              t.enabled = false;
-              t.stop();
-            } catch {}
-          });
-        } catch {}
-        activeGlobalStream = null;
-      }
     };
-  }, [autoStart, startCamera, stopCamera]);
+  }, [autoStart, startCamera]);
 
   return {
     stream,

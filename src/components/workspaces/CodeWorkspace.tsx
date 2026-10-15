@@ -4,8 +4,9 @@ import Editor from '@monaco-editor/react';
 import { Loader2, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function CodeWorkspace({ question }: { question: any }) {
-  const { setAnswer, answers } = useAssessmentState();
+export default function CodeWorkspace({ question, questionNumber }: { question: any; questionNumber?: number }) {
+  const { setAnswer, answers, currentIndex } = useAssessmentState();
+  const displayNum = questionNumber ?? (currentIndex + 1);
   const currentAnswer = answers[question.id] || '';
   
   const labels = ['A', 'B', 'C', 'D', 'E'];
@@ -56,7 +57,7 @@ export default function CodeWorkspace({ question }: { question: any }) {
             
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">MISSION {String(question.id).padStart(2, '0')}</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">QUESTION {String(displayNum).padStart(2, '0')}</span>
                 <span className="text-[10px] font-bold text-[#DC2626] uppercase tracking-widest bg-[#FEF2F2] px-2 py-0.5 rounded">CODE ANALYSIS</span>
               </div>
               <h2 className="text-[16px] font-semibold text-slate-900 leading-snug">{question.question}</h2>

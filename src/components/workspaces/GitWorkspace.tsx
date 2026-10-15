@@ -13,8 +13,9 @@ type GitPayload = {
   updatedAt: number;
 };
 
-export default function GitWorkspace({ question }: { question: any }) {
-  const { setAnswer, answers } = useAssessmentState();
+export default function GitWorkspace({ question, questionNumber }: { question: any; questionNumber?: number }) {
+  const { setAnswer, answers, currentIndex } = useAssessmentState();
+  const displayNum = questionNumber ?? (currentIndex + 1);
   
   const getInitialAnswer = () => {
     const raw = answers[question.id] || '';
@@ -96,7 +97,7 @@ export default function GitWorkspace({ question }: { question: any }) {
           <div className="flex-1 bg-white border border-slate-200/60 p-8 rounded-[2rem] shadow-sm">
              <div className="flex items-center gap-3 mb-5">
                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100/80 px-2.5 py-1 rounded-full">
-                 MISSION {String(question.id).padStart(2, '0')}
+                 QUESTION {String(displayNum).padStart(2, '0')}
                </span>
                <span className="text-[10px] font-bold text-[#DC2626] uppercase tracking-widest bg-[#FEF2F2] px-2.5 py-1 rounded-full">
                  REPOSITORY TASK

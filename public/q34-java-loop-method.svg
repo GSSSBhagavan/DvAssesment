@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 436" width="100%" height="100%">
+  <rect width="100%" height="100%" rx="14" fill="#0F172A" />
+  
+  <!-- Window Header -->
+  <rect width="100%" height="44" rx="14" fill="#1E293B" />
+  <rect y="38" width="100%" height="6" fill="#1E293B" />
+  <line x1="0" y1="44" x2="760" y2="44" stroke="#334155" stroke-width="1" />
+  
+  <!-- Window Controls -->
+  <circle cx="24" cy="22" r="6" fill="#EF4444" />
+  <circle cx="44" cy="22" r="6" fill="#F59E0B" />
+  <circle cx="64" cy="22" r="6" fill="#10B981" />
+  
+  <!-- Title / Language Badge -->
+  <text x="380" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#94A3B8" text-anchor="middle">Java Methods &amp; Loop Execution</text>
+  <rect x="680" y="11" width="64" height="22" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+  <text x="712" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#38BDF8" text-anchor="middle">JAVA</text>
+  
+  <!-- Code Content -->
+  <g font-family="Consolas, Monaco, 'Fira Code', 'Courier New', monospace" font-size="15" xml:space="preserve">
+    <text x="30" y="74" fill="#475569" text-anchor="end" font-size="13">1</text>
+    <text x="52" y="74"><tspan fill="#C084FC" font-weight="700">public class </tspan><tspan fill="#60A5FA" font-weight="400">Main {</tspan></text>
+
+    <text x="30" y="100" fill="#475569" text-anchor="end" font-size="13">2</text>
+    <text x="52" y="100"><tspan fill="#C084FC" font-weight="700">    public static int </tspan><tspan fill="#38BDF8">process</tspan><tspan fill="#E2E8F0">(</tspan><tspan fill="#60A5FA">int </tspan><tspan fill="#E2E8F0">n) {</tspan></text>
+
+    <text x="30" y="126" fill="#475569" text-anchor="end" font-size="13">3</text>
+    <text x="52" y="126"><tspan fill="#60A5FA" font-weight="700">        int </tspan><tspan fill="#E2E8F0">sum = </tspan><tspan fill="#FDE047">0</tspan><tspan fill="#E2E8F0">;</tspan></text>
+
+    <text x="30" y="152" fill="#475569" text-anchor="end" font-size="13">4</text>
+    <text x="52" y="152"><tspan fill="#C084FC" font-weight="700">        for </tspan><tspan fill="#E2E8F0">(</tspan><tspan fill="#60A5FA">int </tspan><tspan fill="#E2E8F0">i = </tspan><tspan fill="#FDE047">1</tspan><tspan fill="#E2E8F0">; i &lt;= n; i++) {</tspan></text>
+
+    <text x="30" y="178" fill="#475569" text-anchor="end" font-size="13">5</text>
+    <text x="52" y="178"><tspan fill="#C084FC" font-weight="700">            if </tspan><tspan fill="#E2E8F0">(i % </tspan><tspan fill="#FDE047">2 </tspan><tspan fill="#E2E8F0">!= </tspan><tspan fill="#FDE047">0</tspan><tspan fill="#E2E8F0">) {</tspan></text>
+
+    <text x="30" y="204" fill="#475569" text-anchor="end" font-size="13">6</text>
+    <text x="52" y="204"><tspan fill="#E2E8F0">                sum += i * </tspan><tspan fill="#FDE047">2</tspan><tspan fill="#E2E8F0">;</tspan></text>
+
+    <text x="30" y="230" fill="#475569" text-anchor="end" font-size="13">7</text>
+    <text x="52" y="230"><tspan fill="#E2E8F0">            }</tspan></text>
+
+    <text x="30" y="256" fill="#475569" text-anchor="end" font-size="13">8</text>
+    <text x="52" y="256"><tspan fill="#E2E8F0">        }</tspan></text>
+
+    <text x="30" y="282" fill="#475569" text-anchor="end" font-size="13">9</text>
+    <text x="52" y="282"><tspan fill="#C084FC" font-weight="700">        return </tspan><tspan fill="#E2E8F0">sum;</tspan></text>
+
+    <text x="30" y="308" fill="#475569" text-anchor="end" font-size="13">10</text>
+    <text x="52" y="308"><tspan fill="#E2E8F0">    }</tspan></text>
+
+    <text x="30" y="334" fill="#475569" text-anchor="end" font-size="13">11</text>
+    <text x="52" y="334"><tspan fill="#C084FC" font-weight="700">    public static void </tspan><tspan fill="#E2E8F0">main(String[] args) {</tspan></text>
+
+    <text x="30" y="360" fill="#475569" text-anchor="end" font-size="13">12</text>
+    <text x="52" y="360"><tspan fill="#38BDF8">        System.out.println</tspan><tspan fill="#E2E8F0">(</tspan><tspan fill="#38BDF8">process</tspan><tspan fill="#E2E8F0">(</tspan><tspan fill="#FDE047">5</tspan><tspan fill="#E2E8F0">));</tspan></text>
+
+    <text x="30" y="386" fill="#475569" text-anchor="end" font-size="13">13</text>
+    <text x="52" y="386"><tspan fill="#E2E8F0">    }</tspan></text>
+
+    <text x="30" y="412" fill="#475569" text-anchor="end" font-size="13">14</text>
+    <text x="52" y="412"><tspan fill="#E2E8F0">}</tspan></text>
+  </g>
+</svg>

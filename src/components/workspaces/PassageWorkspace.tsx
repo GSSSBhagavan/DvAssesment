@@ -4,8 +4,9 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2 } from 'lucide-react';
 
-export default function PassageWorkspace({ question }: { question: any }) {
-  const { setAnswer, answers } = useAssessmentState();
+export default function PassageWorkspace({ question, questionNumber }: { question: any; questionNumber?: number }) {
+  const { setAnswer, answers, currentIndex } = useAssessmentState();
+  const displayNum = questionNumber ?? (currentIndex + 1);
   const [text, setText] = useState('');
   const [saveState, setSaveState] = useState<'IDLE' | 'SAVING' | 'SAVED'>('IDLE');
   
@@ -87,7 +88,7 @@ export default function PassageWorkspace({ question }: { question: any }) {
           <div className="mb-6 flex flex-col gap-4">
             <div className="flex items-center gap-3">
                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100/80 px-2.5 py-1 rounded-full">
-                 MISSION {String(question.id).padStart(2, '0')}
+                 QUESTION {String(displayNum).padStart(2, '0')}
                </span>
                <span className="text-[10px] font-bold text-[#2563EB] uppercase tracking-widest bg-[#EFF6FF] px-2.5 py-1 rounded-full">
                  ✎ WRITTEN RESPONSE

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useCamera, UseCameraReturn } from '@/hooks/useCamera';
+import { useCamera, UseCameraReturn, getActiveGlobalStream } from '@/hooks/useCamera';
 import { Camera, AlertCircle, VideoOff, Loader2 } from 'lucide-react';
 
 interface CameraPreviewProps {
@@ -23,26 +23,34 @@ export default function CameraPreview({
   const { status, error, deviceLabel, attachVideo, startCamera } = activeCam;
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  const isLive = status === 'active' || Boolean(activeCam.stream?.active);
+
   useEffect(() => {
-    if (videoRef.current) {
-      attachVideo(videoRef.current);
+    const video = videoRef.current;
+    if (!video) return;
+
+    attachVideo(video);
+
+    const stream = activeCam.stream || getActiveGlobalStream();
+    if (stream && stream.active) {
+      if (video.srcObject !== stream) {
+        video.srcObject = stream;
+      }
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.play().catch(() => {});
     }
+
     return () => {
+      // Safely detach video element without destroying active hardware tracks
       if (videoRef.current) {
         try {
-          if (videoRef.current.srcObject && 'getTracks' in (videoRef.current.srcObject as any)) {
-            (videoRef.current.srcObject as MediaStream).getTracks().forEach((t) => {
-              try {
-                t.enabled = false;
-                t.stop();
-              } catch {}
-            });
-          }
           videoRef.current.srcObject = null;
         } catch {}
       }
     };
-  }, [attachVideo, status]);
+  }, [attachVideo, activeCam.stream, status]);
 
   const handleRequest = async () => {
     if (onRequestCamera) {
@@ -59,16 +67,22 @@ export default function CameraPreview({
         autoPlay
         playsInline
         muted
-        className={`h-full w-full object-cover -scale-x-100 ${status === 'active' ? 'block' : 'hidden'}`}
+        onLoadedMetadata={(e) => {
+          try {
+            const vid = e.currentTarget;
+            vid.play().catch(() => {});
+          } catch {}
+        }}
+        className={`h-full w-full object-cover -scale-x-100 ${isLive ? 'block' : 'hidden'}`}
       />
 
       {/* Subtle Frame border when camera is active */}
-      {status === 'active' && (
+      {isLive && (
         <div className="absolute inset-2.5 pointer-events-none rounded-xl border border-white/10" />
       )}
 
       {/* Status Overlay when camera is not active */}
-      {status !== 'active' && (
+      {!isLive && (
         <div className="flex h-full min-h-[240px] w-full flex-col items-center justify-center p-6 text-center select-none">
           {status === 'requesting' ? (
             <div className="flex flex-col items-center gap-3 text-zinc-400">
@@ -132,7 +146,7 @@ export default function CameraPreview({
       )}
 
       {/* Active Camera Proctoring Badge */}
-      {status === 'active' && showBadge && (
+      {isLive && showBadge && (
         <div className="absolute top-3 left-3 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-[11px] font-medium text-emerald-400 backdrop-blur-md border border-white/10">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span>Camera active · Proctoring enabled</span>
@@ -140,7 +154,7 @@ export default function CameraPreview({
       )}
 
       {/* Device label footer */}
-      {status === 'active' && deviceLabel && (
+      {isLive && deviceLabel && (
         <div className="absolute bottom-2.5 right-3 text-[10px] font-mono text-zinc-400 truncate max-w-[220px] bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10">
           {deviceLabel}
         </div>

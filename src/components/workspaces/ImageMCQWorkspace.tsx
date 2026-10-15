@@ -3,9 +3,11 @@ import { useAssessmentState } from '@/hooks/useAssessmentState';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-export default function ImageMCQWorkspace({ question }: { question: any }) {
-  const { setAnswer, answers } = useAssessmentState();
+export default function ImageMCQWorkspace({ question, questionNumber }: { question: any; questionNumber?: number }) {
+  const { setAnswer, answers, currentIndex } = useAssessmentState();
   const [selected, setSelected] = useState<string | null>(answers[question.id] || null);
+
+  const displayNum = questionNumber ?? (currentIndex + 1);
 
   // Sync to global state
   useEffect(() => {
@@ -27,7 +29,7 @@ export default function ImageMCQWorkspace({ question }: { question: any }) {
         <div className="mb-6 flex flex-col gap-4">
           <div className="flex items-center gap-3">
              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100/80 px-2.5 py-1 rounded-full">
-               QUESTION {String(question.id).padStart(2, '0')}
+               QUESTION {String(displayNum).padStart(2, '0')}
              </span>
              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 px-2.5 py-1 rounded-full">
                MULTIPLE CHOICE
