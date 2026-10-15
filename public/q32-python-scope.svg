@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 268" width="100%" height="100%">
+  <rect width="100%" height="100%" rx="14" fill="#0F172A" />
+  
+  <!-- Window Header -->
+  <rect width="100%" height="44" rx="14" fill="#1E293B" />
+  <rect y="38" width="100%" height="6" fill="#1E293B" />
+  <line x1="0" y1="44" x2="760" y2="44" stroke="#334155" stroke-width="1" />
+  
+  <!-- Window Controls -->
+  <circle cx="24" cy="22" r="6" fill="#EF4444" />
+  <circle cx="44" cy="22" r="6" fill="#F59E0B" />
+  <circle cx="64" cy="22" r="6" fill="#10B981" />
+  
+  <!-- Title / Language Badge -->
+  <text x="380" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#94A3B8" text-anchor="middle">Python Function Scope &amp; Default Arguments</text>
+  <rect x="680" y="11" width="64" height="22" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+  <text x="712" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#38BDF8" text-anchor="middle">PYTHON</text>
+  
+  <!-- Code Content -->
+  <g font-family="Consolas, Monaco, 'Fira Code', 'Courier New', monospace" font-size="15" xml:space="preserve">
+    <text x="30" y="74" fill="#475569" text-anchor="end" font-size="13">1</text>
+    <text x="52" y="74"><tspan fill="#C084FC" font-weight="700">def </tspan><tspan fill="#60A5FA" font-weight="400">append_val</tspan><tspan fill="#E2E8F0" font-weight="400">(val, target=[]):</tspan></text>
+    <text x="30" y="102" fill="#475569" text-anchor="end" font-size="13">2</text>
+    <text x="52" y="102"><tspan fill="#E2E8F0" font-weight="400">    target.append(val)</tspan></text>
+    <text x="30" y="130" fill="#475569" text-anchor="end" font-size="13">3</text>
+    <text x="52" y="130"><tspan fill="#C084FC" font-weight="700">    return </tspan><tspan fill="#E2E8F0" font-weight="400">target</tspan></text>
+    <text x="30" y="158" fill="#475569" text-anchor="end" font-size="13">4</text>
+    <text x="52" y="158" fill="#E2E8F0"></text>
+    <text x="30" y="186" fill="#475569" text-anchor="end" font-size="13">5</text>
+    <text x="52" y="186"><tspan fill="#94A3B8" font-weight="400">first = append_val(10)</tspan></text>
+    <text x="30" y="214" fill="#475569" text-anchor="end" font-size="13">6</text>
+    <text x="52" y="214"><tspan fill="#38BDF8" font-weight="400">second = append_val(20)</tspan></text>
+    <text x="30" y="242" fill="#475569" text-anchor="end" font-size="13">7</text>
+    <text x="52" y="242"><tspan fill="#4ADE80" font-weight="400">print</tspan><tspan fill="#E2E8F0" font-weight="400">(second)</tspan></text>
+  </g>
+</svg>

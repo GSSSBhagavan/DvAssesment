@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" width="100%" height="100%">
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="14" fill="#0F172A" />
+  
+  <!-- Header -->
+  <rect width="100%" height="44" rx="14" fill="#1E293B" />
+  <rect y="38" width="100%" height="6" fill="#1E293B" />
+  <line x1="0" y1="44" x2="760" y2="44" stroke="#334155" stroke-width="1" />
+  <circle cx="24" cy="22" r="6" fill="#EF4444" />
+  <circle cx="44" cy="22" r="6" fill="#F59E0B" />
+  <circle cx="64" cy="22" r="6" fill="#10B981" />
+  <text x="380" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#94A3B8" text-anchor="middle">SQL Relational LEFT JOIN Unmatched Records</text>
+  
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 z" fill="#38BDF8" />
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 z" fill="#34D399" />
+    </marker>
+  </defs>
+
+  
+    <!-- Students Table -->
+    <rect x="40" y="80" width="220" height="230" rx="8" fill="#1E293B" stroke="#38BDF8" stroke-width="2" />
+    <rect x="40" y="80" width="220" height="36" rx="8" fill="#0284C7" />
+    <text x="150" y="104" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">students (Left Table)</text>
+    
+    <g font-family="monospace" font-size="12" fill="#E2E8F0">
+      <text x="55" y="140" fill="#94A3B8">student_id | name</text>
+      <line x1="50" y1="148" x2="245" y2="148" stroke="#334155" stroke-width="1" />
+      <text x="55" y="172">101        | Alex</text>
+      <text x="55" y="196">102        | Priya</text>
+      <text x="55" y="220">103        | Rohan</text>
+      <text x="55" y="244" fill="#FDE047" font-weight="700">104        | Sarah</text>
+    </g>
+
+    <!-- Query Box in Middle -->
+    <rect x="290" y="130" width="180" height="120" rx="8" fill="#0F172A" stroke="#475569" stroke-width="1.5" />
+    <text x="380" y="160" font-family="monospace" font-size="12" font-weight="700" fill="#C084FC" text-anchor="middle">SELECT *</text>
+    <text x="380" y="180" font-family="monospace" font-size="12" font-weight="700" fill="#C084FC" text-anchor="middle">FROM students s</text>
+    <text x="380" y="202" font-family="monospace" font-size="13" font-weight="700" fill="#F59E0B" text-anchor="middle">LEFT JOIN</text>
+    <text x="380" y="224" font-family="monospace" font-size="12" font-weight="700" fill="#C084FC" text-anchor="middle">scores sc ON ...</text>
+
+    <!-- Scores Table -->
+    <rect x="500" y="80" width="220" height="230" rx="8" fill="#1E293B" stroke="#34D399" stroke-width="2" />
+    <rect x="500" y="80" width="220" height="36" rx="8" fill="#059669" />
+    <text x="610" y="104" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">scores (Right Table)</text>
+    
+    <g font-family="monospace" font-size="12" fill="#E2E8F0">
+      <text x="515" y="140" fill="#94A3B8">student_id | score</text>
+      <line x1="510" y1="148" x2="705" y2="148" stroke="#334155" stroke-width="1" />
+      <text x="515" y="172">101        | 92</text>
+      <text x="515" y="196">102        | 88</text>
+      <text x="515" y="220">103        | 95</text>
+      <text x="515" y="244" fill="#EF4444" font-style="italic">-- (no record for 104) --</text>
+    </g>
+    
+    <text x="380" y="340" font-family="system-ui, sans-serif" font-size="12" fill="#94A3B8" text-anchor="middle">Notice student 104 has no corresponding score record</text>
+      
+</svg>

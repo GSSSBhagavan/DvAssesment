@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" width="100%" height="100%">
+  <!-- Background -->
+  <rect width="100%" height="100%" rx="14" fill="#0F172A" />
+  
+  <!-- Header -->
+  <rect width="100%" height="44" rx="14" fill="#1E293B" />
+  <rect y="38" width="100%" height="6" fill="#1E293B" />
+  <line x1="0" y1="44" x2="760" y2="44" stroke="#334155" stroke-width="1" />
+  <circle cx="24" cy="22" r="6" fill="#EF4444" />
+  <circle cx="44" cy="22" r="6" fill="#F59E0B" />
+  <circle cx="64" cy="22" r="6" fill="#10B981" />
+  <text x="380" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#94A3B8" text-anchor="middle">Production Web Deployment: Reverse Proxy &amp; Horizontal Scaling</text>
+  
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 z" fill="#38BDF8" />
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 8 4 L 0 8 z" fill="#34D399" />
+    </marker>
+  </defs>
+
+  
+    <!-- Client Browsers -->
+    <rect x="280" y="60" width="200" height="42" rx="8" fill="#1E293B" stroke="#94A3B8" stroke-width="1.5" />
+    <text x="380" y="86" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#E2E8F0" text-anchor="middle">Candidate Client Browsers</text>
+    
+    <path d="M 380 102 L 380 128" fill="none" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrow)" />
+
+    <!-- CDN Box -->
+    <rect x="260" y="130" width="240" height="42" rx="8" fill="#1E293B" stroke="#38BDF8" stroke-width="2" />
+    <text x="380" y="156" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#38BDF8" text-anchor="middle">Edge CDN &amp; SSL Termination</text>
+    
+    <path d="M 380 172 L 380 198" fill="none" stroke="#38BDF8" stroke-width="2" marker-end="url(#arrow)" />
+
+    <!-- Reverse Proxy Box -->
+    <rect x="230" y="200" width="300" height="48" rx="8" fill="#0284C7" stroke="#38BDF8" stroke-width="2" />
+    <text x="380" y="230" font-family="system-ui, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF" text-anchor="middle">[ Reverse Proxy / Load Balancer ]</text>
+
+    <!-- Branching arrows to instances -->
+    <path d="M 280 248 L 140 280" fill="none" stroke="#34D399" stroke-width="2" marker-end="url(#arrow-green)" />
+    <path d="M 380 248 L 380 280" fill="none" stroke="#34D399" stroke-width="2" marker-end="url(#arrow-green)" />
+    <path d="M 480 248 L 620 280" fill="none" stroke="#34D399" stroke-width="2" marker-end="url(#arrow-green)" />
+
+    <!-- App Instances -->
+    <rect x="60" y="284" width="160" height="42" rx="6" fill="#1E293B" stroke="#34D399" stroke-width="1.5" />
+    <text x="140" y="310" font-family="monospace" font-size="11" font-weight="700" fill="#34D399" text-anchor="middle">App Instance 1</text>
+
+    <rect x="300" y="284" width="160" height="42" rx="6" fill="#1E293B" stroke="#34D399" stroke-width="1.5" />
+    <text x="380" y="310" font-family="monospace" font-size="11" font-weight="700" fill="#34D399" text-anchor="middle">App Instance 2</text>
+
+    <rect x="540" y="284" width="160" height="42" rx="6" fill="#1E293B" stroke="#34D399" stroke-width="1.5" />
+    <text x="620" y="310" font-family="monospace" font-size="11" font-weight="700" fill="#34D399" text-anchor="middle">App Instance 3</text>
+
+    <!-- Database Box -->
+    <path d="M 140 326 L 310 365" fill="none" stroke="#475569" stroke-width="1.5" />
+    <path d="M 380 326 L 380 355" fill="none" stroke="#475569" stroke-width="1.5" />
+    <path d="M 620 326 L 450 365" fill="none" stroke="#475569" stroke-width="1.5" />
+
+    <rect x="250" y="355" width="260" height="34" rx="6" fill="#0F172A" stroke="#F59E0B" stroke-width="1.5" />
+    <text x="380" y="377" font-family="monospace" font-size="11" font-weight="700" fill="#F59E0B" text-anchor="middle">Managed MongoDB / SQL Database</text>
+      
+</svg>
