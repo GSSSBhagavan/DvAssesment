@@ -212,6 +212,13 @@ export default function LandingPage() {
       return;
     }
 
+    // 3. Strict Biometric Snapshot Gate: Zero-DB local snapshot verification
+    const snapshot = typeof window !== 'undefined' ? sessionStorage.getItem('dv_candidate_face_snapshot') : null;
+    if (!snapshot) {
+      setFullscreenError("Biometric face snapshot required before starting exam. Please click 'Capture Face Snapshot & Verify Identity'.");
+      return;
+    }
+
     setStarting(true);
     try {
       if (document.documentElement.requestFullscreen) {

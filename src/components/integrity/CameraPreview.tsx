@@ -1,27 +1,35 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { useCamera, UseCameraReturn, getActiveGlobalStream } from '@/hooks/useCamera';
 import { useFaceDetection, FaceStateInfo } from '@/hooks/useFaceDetection';
-import { Camera, AlertCircle, VideoOff, Loader2, Check, AlertTriangle, ShieldCheck, UserCheck } from 'lucide-react';
+import { Camera, AlertCircle, VideoOff, Loader2, Check, AlertTriangle, ShieldCheck } from 'lucide-react';
 
-interface CameraPreviewProps {
+export interface CameraPreviewRef {
+  captureSnapshot: () => string | null;
+  getVideoElement: () => HTMLVideoElement | null;
+  triggerFlash: () => void;
+}
+
+export interface CameraPreviewProps {
   className?: string;
   showBadge?: boolean;
   onRequestCamera?: () => void;
   camera?: UseCameraReturn;
   onFaceDetectionChange?: (info: FaceStateInfo) => void;
   enableFaceDetection?: boolean;
+  snapshotUrl?: string | null;
 }
 
-export default function CameraPreview({
+const CameraPreview = forwardRef<CameraPreviewRef, CameraPreviewProps>(function CameraPreview({
   className = '',
   showBadge = true,
   onRequestCamera,
   camera: externalCamera,
   onFaceDetectionChange,
-  enableFaceDetection = true
-}: CameraPreviewProps) {
+  enableFaceDetection = true,
+  snapshotUrl
+}, ref) {
   // Use passed camera instance or initialize internal fallback (autoStart=false)
   const internalCamera = useCamera(false);
   const activeCam = externalCamera || internalCamera;
@@ -29,6 +37,7 @@ export default function CameraPreview({
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
+  const [isFlashing, setIsFlashing] = useState(false);
 
   const isLive = status === 'active' || Boolean(activeCam.stream?.active);
 
@@ -42,6 +51,62 @@ export default function CameraPreview({
   });
 
   const { detectionState, faceCount, isLoadingModel, isModelLoaded } = faceInfo;
+
+  // Sound effect for biometric capture (zero external file dependency)
+  const playShutterSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1200, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.09);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.09);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.09);
+    } catch {}
+  };
+
+  // Expose imperative snapshot capture function to parent
+  useImperativeHandle(ref, () => ({
+    captureSnapshot: () => {
+      const video = videoRef.current;
+      if (!video || video.videoWidth === 0 || video.videoHeight === 0) return null;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+
+        // Invert horizontal mirroring so photo is natural orientation
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Visual flash & audio shutter feedback
+        setIsFlashing(true);
+        playShutterSound();
+        setTimeout(() => setIsFlashing(false), 240);
+
+        return canvas.toDataURL('image/jpeg', 0.88);
+      } catch (err) {
+        console.error('Snapshot capture error:', err);
+        return null;
+      }
+    },
+    getVideoElement: () => videoRef.current,
+    triggerFlash: () => {
+      setIsFlashing(true);
+      playShutterSound();
+      setTimeout(() => setIsFlashing(false), 240);
+    }
+  }));
 
   useEffect(() => {
     const video = videoRef.current;
@@ -103,6 +168,11 @@ export default function CameraPreview({
         className={`h-full w-full object-cover -scale-x-100 ${isLive ? 'block' : 'hidden'}`}
       />
 
+      {/* Camera Shutter Flash Effect */}
+      {isFlashing && (
+        <div className="absolute inset-0 bg-white z-50 pointer-events-none animate-out fade-out duration-300" />
+      )}
+
       {/* Real-time Dynamic Face Positioning Guide Frame */}
       {isLive && enableFaceDetection && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
@@ -115,7 +185,7 @@ export default function CameraPreview({
                   ? 'border-rose-500 bg-rose-500/[0.08] shadow-[0_0_24px_rgba(244,63,94,0.35)] animate-pulse'
                   : isLookingAway
                     ? 'border-amber-400 bg-amber-500/[0.06] shadow-[0_0_20px_rgba(251,191,36,0.3)]'
-                    : 'border-dashed border-amber-400/90 bg-amber-500/[0.04] shadow-[0_0_20px_rgba(251,191,36,0.25)] animate-pulse'
+                    : 'border-dashed border-blue-400/90 bg-blue-500/[0.04] shadow-[0_0_20px_rgba(96,165,250,0.25)]'
             }`}
           >
             {/* Top Indicator on Oval */}
@@ -126,7 +196,7 @@ export default function CameraPreview({
                   ? 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
                   : isLookingAway
                     ? 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
-                    : 'bg-black/75 text-amber-300 border border-amber-400/50'
+                    : 'bg-black/75 text-blue-300 border border-blue-400/50'
             }`}>
               {isFaceVerified ? (
                 <span className="flex items-center gap-1">
@@ -144,8 +214,8 @@ export default function CameraPreview({
 
             {/* Subtle crosshairs inside guide when aligning */}
             {!isFaceVerified && (
-              <div className="w-8 h-8 rounded-full border border-amber-400/30 flex items-center justify-center">
-                <div className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
+              <div className="w-8 h-8 rounded-full border border-blue-400/30 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400/60" />
               </div>
             )}
 
@@ -230,7 +300,7 @@ export default function CameraPreview({
 
       {/* Active Camera Proctoring & Face Status Badge (Top-Left) */}
       {isLive && showBadge && (
-        <div className="absolute top-3 left-3 flex items-center gap-2">
+        <div className="absolute top-3 left-3 flex items-center gap-2 z-20">
           {isLoadingModel || (!isModelLoaded && detectionState === 'DETECTION_UNAVAILABLE') ? (
             <div className="flex items-center gap-1.5 rounded-full bg-blue-950/80 text-blue-300 border border-blue-500/40 px-3 py-1 text-[11px] font-medium backdrop-blur-md shadow-sm">
               <Loader2 size={12} className="animate-spin text-blue-400" />
@@ -261,19 +331,27 @@ export default function CameraPreview({
         </div>
       )}
 
-      {/* Prominent Actionable Warning Banner (Bottom) when camera is active but face is missing */}
+      {/* Verified Snapshot Thumbnail in Top-Right (when snapshot is already captured) */}
+      {snapshotUrl && (
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 bg-black/70 backdrop-blur-md border border-emerald-400/50 pl-1 pr-2.5 py-1 rounded-full shadow-lg">
+          <img src={snapshotUrl} alt="Snapshot" className="w-5 h-5 rounded-full object-cover border border-emerald-400" />
+          <span className="text-[10px] font-mono text-emerald-300 font-semibold uppercase tracking-wider">Snapshot Locked</span>
+        </div>
+      )}
+
+      {/* Actionable Warning Banner (Bottom) when camera is active but face is missing */}
       {isLive && isNoFace && (
-        <div className="absolute bottom-2.5 left-3 right-3 bg-rose-950/90 text-rose-100 border border-rose-500/50 px-3 py-2 rounded-xl text-[11px] flex items-center gap-2 backdrop-blur-md shadow-lg">
+        <div className="absolute bottom-2.5 left-3 right-3 bg-rose-950/90 text-rose-100 border border-rose-500/50 px-3 py-2 rounded-xl text-[11px] flex items-center gap-2 backdrop-blur-md shadow-lg z-20">
           <AlertTriangle size={14} className="text-rose-400 shrink-0" />
           <span className="font-normal leading-tight">
-            <strong>Face not detected:</strong> Camera shutter may be closed, feed is black, or face is out of view. Center your face to unlock the assessment.
+            <strong>Face not detected:</strong> Camera shutter may be closed, feed is black, or face is out of view. Center your face to unlock the snapshot capture.
           </span>
         </div>
       )}
 
       {/* Warning Banner when multiple faces are detected */}
       {isLive && isMultiFace && (
-        <div className="absolute bottom-2.5 left-3 right-3 bg-rose-950/90 text-rose-100 border border-rose-500/50 px-3 py-2 rounded-xl text-[11px] flex items-center gap-2 backdrop-blur-md shadow-lg">
+        <div className="absolute bottom-2.5 left-3 right-3 bg-rose-950/90 text-rose-100 border border-rose-500/50 px-3 py-2 rounded-xl text-[11px] flex items-center gap-2 backdrop-blur-md shadow-lg z-20">
           <AlertTriangle size={14} className="text-rose-400 shrink-0" />
           <span className="font-normal leading-tight">
             <strong>Multiple people detected:</strong> Only the single registered candidate is permitted during this examination.
@@ -281,12 +359,14 @@ export default function CameraPreview({
         </div>
       )}
 
-      {/* Device label footer (when face is healthy) */}
-      {isLive && deviceLabel && isFaceVerified && (
-        <div className="absolute bottom-2.5 right-3 text-[10px] font-mono text-zinc-400 truncate max-w-[200px] bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10">
+      {/* Device label footer (when face is healthy and no warning) */}
+      {isLive && deviceLabel && isFaceVerified && !isNoFace && !isMultiFace && !snapshotUrl && (
+        <div className="absolute bottom-2.5 right-3 text-[10px] font-mono text-zinc-400 truncate max-w-[200px] bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 z-20">
           {deviceLabel}
         </div>
       )}
     </div>
   );
-}
+});
+
+export default CameraPreview;

@@ -16,6 +16,16 @@ export default function ProctoringStatusBar({
   isLookingAway = false
 }: ProctoringStatusBarProps) {
   const { strikeCount, proctoringStatus, proctoringMessage } = useAssessmentState();
+  const [biometricSnapshot, setBiometricSnapshot] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const snap = sessionStorage.getItem('dv_candidate_face_snapshot');
+        if (snap) setBiometricSnapshot(snap);
+      } catch {}
+    }
+  }, []);
 
   const isCameraActive = cameraStatus === 'active';
   const isFaceOk = faceState === 'FACE_PRESENT' && !isLookingAway;
@@ -24,6 +34,17 @@ export default function ProctoringStatusBar({
     <div className="w-full bg-slate-900 text-white border-b border-slate-800 text-xs px-4 py-1.5 flex flex-wrap items-center justify-between gap-2 select-none font-sans transition-colors">
       {/* Left side: Telemetry Status Indicators */}
       <div className="flex items-center gap-3">
+        {/* Biometric ID Badge if captured */}
+        {biometricSnapshot && (
+          <>
+            <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full shadow-xs">
+              <img src={biometricSnapshot} alt="Biometric ID" className="w-4 h-4 rounded-full object-cover border border-emerald-400" />
+              <span className="text-[11px] font-mono font-medium">Biometric ID: Verified</span>
+            </div>
+            <span className="text-slate-600">|</span>
+          </>
+        )}
+
         {/* Camera indicator */}
         <div className="flex items-center gap-1.5">
           {isCameraActive ? (
