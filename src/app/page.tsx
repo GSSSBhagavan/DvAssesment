@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSystemReadiness } from '@/hooks/useSystemReadiness';
 import { useCamera, stopAllCameraStreams, exitFullscreenSafely } from '@/hooks/useCamera';
+import { useMicrophone } from '@/hooks/useMicrophone';
 import { FaceStateInfo } from '@/hooks/useFaceDetection';
 import AssessmentBrandHeader from '@/components/brand/AssessmentBrandHeader';
 import AssessmentReadiness from '@/components/assessment/AssessmentReadiness';
@@ -28,6 +29,31 @@ export default function LandingPage() {
   const [starting, setStarting] = useState(false);
   const [viewMode, setViewMode] = useState<'AUTO' | 'HOME' | 'COMPLETION'>('AUTO');
 
+  // Face snapshot captured client-side for biometric session verification (NOT stored in MongoDB)
+  const [capturedSnapshot, setCapturedSnapshot] = useState<string | null>(null);
+
+  const handleCaptureSnapshot = useCallback((snapshot: string | null) => {
+    setCapturedSnapshot(snapshot);
+    if (typeof window !== 'undefined') {
+      try {
+        if (snapshot) {
+          sessionStorage.setItem('dv_candidate_face_snapshot', snapshot);
+        } else {
+          sessionStorage.removeItem('dv_candidate_face_snapshot');
+        }
+      } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const existing = sessionStorage.getItem('dv_candidate_face_snapshot');
+        if (existing) setCapturedSnapshot(existing);
+      } catch {}
+    }
+  }, []);
+
   // Real-time face detection telemetry
   const [faceState, setFaceState] = useState<FaceStateInfo>({
     state: 'DETECTION_UNAVAILABLE',
@@ -40,7 +66,10 @@ export default function LandingPage() {
   // Camera controller (explicit user action required; no autoStart on refresh)
   const camera = useCamera(false);
 
-  // System readiness diagnostics synced with camera state and face verification
+  // Microphone controller for mandatory audio proctoring (processed locally, NEVER stored in MongoDB)
+  const microphone = useMicrophone();
+
+  // System readiness diagnostics synced with camera state, face detection, microphone, and snapshot
   const {
     checks,
     networkMetrics,
@@ -48,8 +77,16 @@ export default function LandingPage() {
     isChecking,
     runBasicChecks,
     retryCheck,
-    requestCamera
-  } = useSystemReadiness(camera.status, camera.deviceLabel, faceState);
+    requestCamera,
+    requestMicrophone
+  } = useSystemReadiness(
+    camera.status, 
+    camera.deviceLabel, 
+    faceState,
+    microphone.status,
+    microphone.deviceLabel,
+    Boolean(capturedSnapshot)
+  );
 
   // Auth and session validation
   const checkUserAndSession = useCallback(async () => {
@@ -143,20 +180,22 @@ export default function LandingPage() {
     }
   }, [status, candidateUser, runBasicChecks]);
 
-  // Ensure camera hardware is stopped and fullscreen exited on completion screen
+  // Ensure camera and microphone hardware are stopped on completion screen
   useEffect(() => {
     if (status === 'SUBMITTED' || status === 'EXPIRED') {
       exitFullscreenSafely();
       stopAllCameraStreams();
+      microphone.stopMicrophone();
       const t1 = setTimeout(stopAllCameraStreams, 200);
       const t2 = setTimeout(stopAllCameraStreams, 800);
       return () => {
         clearTimeout(t1);
         clearTimeout(t2);
         stopAllCameraStreams();
+        microphone.stopMicrophone();
       };
     }
-  }, [status]);
+  }, [status, microphone]);
 
   const handleHome = () => {
     setViewMode('HOME');
@@ -169,6 +208,14 @@ export default function LandingPage() {
       console.error(e);
     }
     useAssessmentState.getState().resetState();
+    stopAllCameraStreams();
+    microphone.stopMicrophone();
+    setCapturedSnapshot(null);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.removeItem('dv_candidate_face_snapshot');
+      } catch {}
+    }
     setCandidateUser(null);
     setViewMode('AUTO');
     setStatus('NOT_STARTED');
@@ -212,10 +259,27 @@ export default function LandingPage() {
       return;
     }
 
-    // 3. Strict Biometric Snapshot Gate: Zero-DB local snapshot verification
-    const snapshot = typeof window !== 'undefined' ? sessionStorage.getItem('dv_candidate_face_snapshot') : null;
-    if (!snapshot) {
-      setFullscreenError("Biometric face snapshot required before starting exam. Please click 'Capture Face Snapshot & Verify Identity'.");
+    // 3. Biometric Identity Snapshot Gate: Must take snapshot to unlock examination
+    if (!capturedSnapshot) {
+      setFullscreenError("Biometric identity snapshot required: Please click 'Capture Face Snapshot & Verify Identity' to verify your face before continuing.");
+      return;
+    }
+
+    // 4. Mandatory Microphone Access Gate
+    let isMicActive = microphone.status === 'active' || Boolean(microphone.stream?.active);
+    if (!isMicActive) {
+      try {
+        const mStream = await microphone.startMicrophone();
+        if (mStream && mStream.active) {
+          isMicActive = true;
+        }
+      } catch (mErr) {
+        console.warn('Microphone verification check:', mErr);
+      }
+    }
+
+    if (!isMicActive) {
+      setFullscreenError("Microphone access is mandatory for proctored examination. Please grant microphone permission in your browser to proceed.");
       return;
     }
 
@@ -308,7 +372,11 @@ export default function LandingPage() {
                 runBasicChecks={runBasicChecks}
                 retryCheck={retryCheck}
                 requestCamera={camera.startCamera}
+                requestMicrophone={microphone.startMicrophone || requestMicrophone}
                 camera={camera}
+                microphone={microphone}
+                capturedSnapshot={capturedSnapshot}
+                onCaptureSnapshot={handleCaptureSnapshot}
                 onBack={handleHome}
                 onStartAssessment={handleStart}
                 isStarting={starting}

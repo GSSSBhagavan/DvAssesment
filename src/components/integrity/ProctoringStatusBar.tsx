@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAssessmentState } from '@/hooks/useAssessmentState';
-import { Camera, ShieldCheck, AlertTriangle, VideoOff, Eye } from 'lucide-react';
+import { Camera, ShieldCheck, AlertTriangle, VideoOff, Eye, Mic } from 'lucide-react';
 
 interface ProctoringStatusBarProps {
   cameraStatus: string;
@@ -16,9 +16,10 @@ export default function ProctoringStatusBar({
   isLookingAway = false
 }: ProctoringStatusBarProps) {
   const { strikeCount, proctoringStatus, proctoringMessage } = useAssessmentState();
-  const [biometricSnapshot, setBiometricSnapshot] = React.useState<string | null>(null);
+  const [biometricSnapshot, setBiometricSnapshot] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  // Retrieve client-side session face snapshot (zero DB storage)
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         const snap = sessionStorage.getItem('dv_candidate_face_snapshot');
@@ -34,7 +35,7 @@ export default function ProctoringStatusBar({
     <div className="w-full bg-slate-900 text-white border-b border-slate-800 text-xs px-4 py-1.5 flex flex-wrap items-center justify-between gap-2 select-none font-sans transition-colors">
       {/* Left side: Telemetry Status Indicators */}
       <div className="flex items-center gap-3">
-        {/* Biometric ID Badge if captured */}
+        {/* Biometric ID Badge if captured in readiness */}
         {biometricSnapshot && (
           <>
             <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full shadow-xs">
@@ -66,6 +67,16 @@ export default function ProctoringStatusBar({
               <span>Connecting Camera...</span>
             </span>
           )}
+        </div>
+
+        <span className="text-slate-600">|</span>
+
+        {/* Microphone proctoring indicator */}
+        <div className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1 text-emerald-400 font-medium">
+            <Mic size={12} />
+            <span>Mic Proctored</span>
+          </span>
         </div>
 
         <span className="text-slate-600">|</span>
