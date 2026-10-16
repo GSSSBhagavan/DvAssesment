@@ -63,10 +63,10 @@ export default function DVWelcomeScreen({
       <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
         <defs>
           <clipPath id="hero-architectural-curve" clipPathUnits="objectBoundingBox">
-            <path d="M 0.05,0 C 0.00,0.30 0.00,0.70 0.05,1 L 1,1 L 1,0 Z" />
+            <path d="M 0,0 C 0.12,0.25 0.12,0.75 0,1 L 1,1 L 1,0 Z" />
           </clipPath>
           <clipPath id="hero-mobile-curve" clipPathUnits="objectBoundingBox">
-            <path d="M 0,0.05 C 0.30,0.00 0.70,0.00 1,0.05 L 1,1 L 0,1 Z" />
+            <path d="M 0,0 C 0.25,0.08 0.75,0.08 1,0 L 1,1 L 0,1 Z" />
           </clipPath>
         </defs>
       </svg>
@@ -75,7 +75,7 @@ export default function DVWelcomeScreen({
       {/* LEFT COLUMN: EDITORIAL CONTENT (50% DESKTOP EQUAL SPLIT) */}
       {/* Balanced, generous negative space, uncrowded layout       */}
       {/* ======================================================== */}
-      <div className="w-full lg:w-1/2 min-h-screen lg:h-full flex flex-col justify-between p-6 sm:p-8 lg:py-8 lg:px-10 xl:px-12 z-20 shrink-0">
+      <div className="w-full lg:w-[46%] xl:w-[42%] 2xl:w-[38%] min-h-screen lg:h-full flex flex-col justify-between p-6 sm:p-8 lg:py-8 lg:pl-10 lg:pr-4 xl:pl-12 xl:pr-6 2xl:pl-16 2xl:pr-8 z-20 shrink-0">
 
         {/* Top: Official Data Valley Brand Lockup */}
         <header className="flex items-center justify-between w-full">
@@ -262,10 +262,7 @@ export default function DVWelcomeScreen({
       {/* RIGHT HERO REGION: 50% EQUAL SPLIT PHOTOGRAPH            */}
       {/* Carefully composed curved contour, zero content overlap  */}
       {/* ======================================================== */}
-      <div className="w-full lg:w-1/2 h-80 sm:h-[460px] lg:h-full relative overflow-hidden shrink-0">
-
-        {/* Subtle Ambient Shadow Inset along the curve on desktop */}
-        <div className="hidden lg:block absolute inset-0 [clip-path:url(#hero-architectural-curve)] pointer-events-none z-10 shadow-[inset_12px_0_24px_rgba(0,0,0,0.05)]" />
+      <div className="w-full lg:w-[54%] xl:w-[58%] 2xl:w-[62%] h-80 sm:h-[460px] lg:h-full relative overflow-hidden shrink-0">
 
         <motion.div
           initial={{ opacity: 0, scale: 1.02 }}
@@ -276,7 +273,7 @@ export default function DVWelcomeScreen({
           <img
             src="/student-assessment-v2.png"
             alt="Student concentrating on an online assessment using a laptop while writing notes"
-            className="w-full h-full object-cover object-[30%_52%] transition-transform duration-700 ease-out hover:scale-[1.015]"
+            className="w-full h-full object-cover object-[25%_50%] scale-[1.08] translate-x-6 sm:translate-x-8 lg:translate-x-12 xl:translate-x-14 transition-transform duration-700 ease-out hover:scale-[1.095]"
           />
         </motion.div>
       </div>
