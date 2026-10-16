@@ -5,6 +5,7 @@ import { Candidate } from '@/server/models/Candidate';
 import { setSessionCookie } from '@/server/utils/auth';
 import { checkRateLimit } from '@/server/utils/rateLimiter';
 import { validateEmail, normalizeEmail } from '@/lib/validation/email';
+import { validatePassword, getPasswordPolicyErrorMessage, MAX_PASSWORD_LENGTH } from '@/lib/validation/password';
 
 export async function POST(req: Request) {
   try {
@@ -22,6 +23,7 @@ export async function POST(req: Request) {
     const rawEmail = typeof body.email === 'string' ? body.email.trim() : '';
     const rawPassword = typeof body.password === 'string' ? body.password : '';
     const rawFullName = typeof body.fullName === 'string' ? body.fullName.trim() : '';
+    const mode = typeof body.mode === 'string' ? body.mode.trim().toLowerCase() : 'auto';
 
     // 1. Email validation
     if (!rawEmail) {
@@ -34,9 +36,13 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // 2. Password validation
-    if (!rawPassword || rawPassword.trim().length === 0) {
+    // 2. Password present check
+    if (!rawPassword || rawPassword.length === 0) {
       return NextResponse.json({ error: 'Please enter your password.' }, { status: 400 });
+    }
+
+    if (rawPassword.length > MAX_PASSWORD_LENGTH) {
+      return NextResponse.json({ error: `Password cannot exceed ${MAX_PASSWORD_LENGTH} characters.` }, { status: 400 });
     }
 
     const normalizedEmail = normalizeEmail(rawEmail);
@@ -59,11 +65,24 @@ export async function POST(req: Request) {
     let candidate = await Candidate.findOne({ email: normalizedEmail })
       .select('+password +passwordHash');
 
-    if (!candidate) {
-      // --- NEW CANDIDATE REGISTRATION FLOW ---
-      // Full name is required to create a new candidate account
+    // === FLOW A: EXPLICIT REGISTRATION MODE ===
+    if (mode === 'register') {
+      if (candidate) {
+        return NextResponse.json(
+          { error: 'An account with this email already exists. Please sign in instead.' },
+          { status: 409 }
+        );
+      }
+
       if (!rawFullName || rawFullName.length < 2) {
-        return NextResponse.json({ error: 'Please enter your full name.' }, { status: 400 });
+        return NextResponse.json({ error: 'Please enter your full name (at least 2 characters).' }, { status: 400 });
+      }
+
+      // Enforce full password complexity on new account creation
+      const passwordValidation = validatePassword(rawPassword);
+      if (!passwordValidation.isValid) {
+        const errorMsg = getPasswordPolicyErrorMessage(rawPassword) || 'Password does not meet complexity requirements.';
+        return NextResponse.json({ error: errorMsg }, { status: 400 });
       }
 
       const passwordHash = await bcrypt.hash(rawPassword, 10);
@@ -76,35 +95,25 @@ export async function POST(req: Request) {
           role: 'CANDIDATE'
         });
       } catch (createErr: any) {
-        // Handle race condition: simultaneous registration attempt with the same email
         if (createErr?.code === 11000 || createErr?.name === 'MongoServerError') {
-          candidate = await Candidate.findOne({ email: normalizedEmail })
-            .select('+password +passwordHash');
-          if (!candidate) {
-            return NextResponse.json(
-              { error: 'Registration conflict occurred. Please retry.' },
-              { status: 409 }
-            );
-          }
-
-          // Verify password against the account created concurrently
-          let isMatch = false;
-          if (candidate.passwordHash) {
-            isMatch = await bcrypt.compare(rawPassword, candidate.passwordHash);
-          } else if (candidate.password) {
-            isMatch = candidate.password === rawPassword;
-          }
-
-          if (!isMatch) {
-            return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
-          }
-        } else {
-          throw createErr;
+          return NextResponse.json(
+            { error: 'An account with this email already exists. Please sign in instead.' },
+            { status: 409 }
+          );
         }
+        throw createErr;
       }
-    } else {
-      // --- EXISTING CANDIDATE AUTHENTICATION FLOW ---
-      // Verify existing password (NEVER overwrite without verification)
+    } 
+    // === FLOW B: EXPLICIT LOGIN MODE (Existing accounts) ===
+    else if (mode === 'login') {
+      if (!candidate) {
+        return NextResponse.json(
+          { error: 'No account found with this email. Please switch to Create Account to register.' },
+          { status: 401 }
+        );
+      }
+
+      // Verify existing password (do NOT apply new complexity rules, so existing candidates are never locked out)
       let isMatch = false;
       if (candidate.passwordHash) {
         isMatch = await bcrypt.compare(rawPassword, candidate.passwordHash);
@@ -119,12 +128,71 @@ export async function POST(req: Request) {
       }
 
       if (!isMatch) {
-        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+        return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
       }
+    }
+    // === FLOW C: AUTO (Backwards compatible fallback for older clients) ===
+    else {
+      if (!candidate) {
+        // Register new account: require full name & password complexity
+        if (!rawFullName || rawFullName.length < 2) {
+          return NextResponse.json({ error: 'Please enter your full name.' }, { status: 400 });
+        }
 
-      // Update full name if the existing record had a placeholder or if updated name was provided
-      if (rawFullName && rawFullName.length >= 2) {
-        if (!candidate.fullName || candidate.fullName === 'Student Candidate' || candidate.fullName !== rawFullName) {
+        const passwordValidation = validatePassword(rawPassword);
+        if (!passwordValidation.isValid) {
+          const errorMsg = getPasswordPolicyErrorMessage(rawPassword) || 'Password does not meet complexity requirements.';
+          return NextResponse.json({ error: errorMsg }, { status: 400 });
+        }
+
+        const passwordHash = await bcrypt.hash(rawPassword, 10);
+        try {
+          candidate = await Candidate.create({
+            email: normalizedEmail,
+            fullName: rawFullName,
+            passwordHash,
+            role: 'CANDIDATE'
+          });
+        } catch (createErr: any) {
+          if (createErr?.code === 11000 || createErr?.name === 'MongoServerError') {
+            candidate = await Candidate.findOne({ email: normalizedEmail })
+              .select('+password +passwordHash');
+            if (!candidate) {
+              return NextResponse.json({ error: 'Registration conflict occurred. Please retry.' }, { status: 409 });
+            }
+            let isMatch = false;
+            if (candidate.passwordHash) {
+              isMatch = await bcrypt.compare(rawPassword, candidate.passwordHash);
+            } else if (candidate.password) {
+              isMatch = candidate.password === rawPassword;
+            }
+            if (!isMatch) {
+              return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
+            }
+          } else {
+            throw createErr;
+          }
+        }
+      } else {
+        // Existing account: verify password without enforcing new complexity
+        let isMatch = false;
+        if (candidate.passwordHash) {
+          isMatch = await bcrypt.compare(rawPassword, candidate.passwordHash);
+        } else if (candidate.password) {
+          isMatch = candidate.password === rawPassword;
+          if (isMatch) {
+            candidate.passwordHash = await bcrypt.hash(rawPassword, 10);
+            candidate.password = undefined;
+            await candidate.save();
+          }
+        }
+
+        if (!isMatch) {
+          return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
+        }
+
+        // Update full name if provided
+        if (rawFullName && rawFullName.length >= 2 && candidate.fullName !== rawFullName) {
           candidate.fullName = rawFullName;
           await candidate.save();
         }
@@ -149,7 +217,7 @@ export async function POST(req: Request) {
       }
     });
   } catch (error) {
-    console.error('Authentication error occurred during login:', error);
+    console.error('Authentication error occurred during login/register:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -6,6 +6,8 @@ import {
   Users, FileText, AlertTriangle, Eye, X, BarChart3, Clock,
   Search, FileCheck2, XCircle, MinusCircle, Copy, Printer, Check, Filter, HelpCircle
 } from 'lucide-react';
+import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator';
+import { validatePassword } from '@/lib/validation/password';
 
 interface SectionBreakdownItem {
   sectionId: string;
@@ -391,18 +393,23 @@ Verified & Exported from Data Valley Platform for Institutional Faculty Review.
                 id="cand-password"
                 type="password"
                 required
-                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Min. 8 characters"
+                placeholder="Must satisfy complexity rules"
                 className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
                 disabled={formLoading}
               />
+              <div className="mt-2">
+                <PasswordStrengthIndicator
+                  validation={validatePassword(password)}
+                  showChecklist={true}
+                />
+              </div>
             </div>
 
             <button
               type="submit"
-              disabled={formLoading || !fullName.trim() || !email.trim() || password.length < 8}
+              disabled={formLoading || !fullName.trim() || !email.trim() || !validatePassword(password).isValid}
               className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-10"
             >
               {formLoading ? (

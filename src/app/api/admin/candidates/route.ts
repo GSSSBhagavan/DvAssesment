@@ -5,13 +5,20 @@ import { Candidate } from '@/server/models/Candidate';
 import { requireAuth, JwtPayload } from '@/server/utils/auth';
 import { z } from 'zod';
 
+import { validatePassword } from '@/lib/validation/password';
+
 const provisionCandidateSchema = z.object({
   email: z.preprocess(
     (val) => (typeof val === 'string' ? val.trim().toLowerCase() : val),
     z.string().email('A valid email address is required')
   ),
   fullName: z.string().trim().min(2, 'Full name must be at least 2 characters'),
-  password: z.string().min(8, 'Password must be at least 8 characters long')
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters long')
+    .max(128, 'Password must not exceed 128 characters')
+    .refine((pw) => validatePassword(pw).isValid, {
+      message: 'Password must satisfy all complexity requirements (uppercase, lowercase, number, special character, min 8 chars)'
+    })
 });
 
 export const POST = requireAuth(async (req: Request, session: JwtPayload) => {
