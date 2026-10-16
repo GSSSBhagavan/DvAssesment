@@ -43,3 +43,6 @@ next-env.d.ts
 
 # scratch files
 scratch/
+
+# data backups
+backups/student_data_backup_*
