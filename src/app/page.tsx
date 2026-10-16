@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSystemReadiness } from '@/hooks/useSystemReadiness';
 import { useCamera, stopAllCameraStreams, exitFullscreenSafely } from '@/hooks/useCamera';
+import { FaceStateInfo } from '@/hooks/useFaceDetection';
 import AssessmentBrandHeader from '@/components/brand/AssessmentBrandHeader';
 import AssessmentReadiness from '@/components/assessment/AssessmentReadiness';
 import AssessmentCompletion from '@/components/assessment/AssessmentCompletion';
@@ -27,10 +28,19 @@ export default function LandingPage() {
   const [starting, setStarting] = useState(false);
   const [viewMode, setViewMode] = useState<'AUTO' | 'HOME' | 'COMPLETION'>('AUTO');
 
+  // Real-time face detection telemetry
+  const [faceState, setFaceState] = useState<FaceStateInfo>({
+    state: 'DETECTION_UNAVAILABLE',
+    faceCount: 0,
+    isModelLoaded: false,
+    isLoadingModel: false,
+    error: null
+  });
+
   // Camera controller (explicit user action required; no autoStart on refresh)
   const camera = useCamera(false);
 
-  // System readiness diagnostics synced with camera state
+  // System readiness diagnostics synced with camera state and face verification
   const {
     checks,
     networkMetrics,
@@ -39,7 +49,7 @@ export default function LandingPage() {
     runBasicChecks,
     retryCheck,
     requestCamera
-  } = useSystemReadiness(camera.status, camera.deviceLabel);
+  } = useSystemReadiness(camera.status, camera.deviceLabel, faceState);
 
   // Auth and session validation
   const checkUserAndSession = useCallback(async () => {
@@ -192,6 +202,16 @@ export default function LandingPage() {
       return;
     }
 
+    // 2. Strict Face Verification Gate: Real-time face must be actively detected and centered
+    if (faceState.state !== 'FACE_PRESENT' || faceState.faceCount !== 1) {
+      if (faceState.state === 'MULTIPLE_FACES' || faceState.faceCount > 1) {
+        setFullscreenError("Proctoring security alert: Multiple faces detected in camera. Only the candidate may be visible.");
+      } else {
+        setFullscreenError("Face verification failed: No face detected. Please ensure your webcam shutter is open and your face is centered in the camera to begin.");
+      }
+      return;
+    }
+
     setStarting(true);
     try {
       if (document.documentElement.requestFullscreen) {
@@ -289,6 +309,8 @@ export default function LandingPage() {
                 candidateName={candidateUser?.fullName}
                 isResumable={Boolean(assessmentId)}
                 onSignOut={handleSignOut}
+                faceState={faceState}
+                onFaceDetectionChange={setFaceState}
               />
             </motion.div>
           )}

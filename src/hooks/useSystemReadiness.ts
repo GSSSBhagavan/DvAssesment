@@ -12,8 +12,13 @@ import {
 } from '@/lib/readiness/readinessEngine';
 import { measureRealtimeNetwork, NetworkMetrics } from '@/lib/readiness/networkDiagnostics';
 import { CameraStatus } from '@/hooks/useCamera';
+import { FaceStateInfo } from '@/hooks/useFaceDetection';
 
-export const useSystemReadiness = (cameraStatus?: CameraStatus, cameraLabel?: string | null) => {
+export const useSystemReadiness = (
+  cameraStatus?: CameraStatus, 
+  cameraLabel?: string | null,
+  faceState?: FaceStateInfo
+) => {
   const [checks, setChecks] = useState<Record<string, ReadinessCheck>>({
     camera: { id: 'camera', label: 'Camera and proctoring', status: 'requesting', message: 'Click "Enable Camera" to verify webcam.', blocking: true, canRetry: true },
     browser: { id: 'browser', label: 'Browser Compatibility', status: 'idle', message: 'Waiting to check...', blocking: true, canRetry: true },
@@ -34,15 +39,54 @@ export const useSystemReadiness = (cameraStatus?: CameraStatus, cameraLabel?: st
     }));
   }, []);
 
-  // Synchronize camera state with readiness checklist
+  // Synchronize camera state & real-time face verification with readiness checklist
   useEffect(() => {
     if (!cameraStatus) return;
 
     if (cameraStatus === 'active') {
-      updateCheck('camera', {
-        status: 'passed',
-        message: cameraLabel ? `Camera active: ${cameraLabel}` : 'Camera active · Proctoring enabled'
-      });
+      if (faceState) {
+        if (faceState.isLoadingModel || (!faceState.isModelLoaded && faceState.state === 'DETECTION_UNAVAILABLE')) {
+          updateCheck('camera', {
+            status: 'checking',
+            message: 'Camera active · Initializing face detection model...'
+          });
+        } else if (faceState.state === 'FACE_PRESENT') {
+          updateCheck('camera', {
+            status: 'passed',
+            message: cameraLabel ? `Face verified · ${cameraLabel}` : 'Face verified · Proctoring ready'
+          });
+        } else if (faceState.state === 'NO_FACE') {
+          updateCheck('camera', {
+            status: 'failed',
+            message: 'No face detected. Please ensure your webcam is uncovered and face is centered.'
+          });
+        } else if (faceState.state === 'MULTIPLE_FACES') {
+          updateCheck('camera', {
+            status: 'failed',
+            message: `Multiple faces detected (${faceState.faceCount}). Only the candidate must be present.`
+          });
+        } else if (faceState.state === 'LOOKING_AWAY') {
+          updateCheck('camera', {
+            status: 'failed',
+            message: 'Face detected. Please look directly at the screen to verify.'
+          });
+        } else if (faceState.state === 'PARTIALLY_OUT_OF_FRAME') {
+          updateCheck('camera', {
+            status: 'failed',
+            message: 'Face partially out of frame. Please center your face inside the camera.'
+          });
+        } else {
+          updateCheck('camera', {
+            status: 'checking',
+            message: 'Camera active · Scanning for face in frame...'
+          });
+        }
+      } else {
+        updateCheck('camera', {
+          status: 'checking',
+          message: 'Camera active · Waiting for face detection...'
+        });
+      }
     } else if (cameraStatus === 'denied') {
       updateCheck('camera', {
         status: 'failed',
@@ -69,7 +113,7 @@ export const useSystemReadiness = (cameraStatus?: CameraStatus, cameraLabel?: st
         message: 'Click "Enable Camera" to verify webcam.'
       });
     }
-  }, [cameraStatus, cameraLabel, updateCheck]);
+  }, [cameraStatus, cameraLabel, faceState, updateCheck]);
 
   // Run the full diagnostics suite
   const runBasicChecks = useCallback(async () => {

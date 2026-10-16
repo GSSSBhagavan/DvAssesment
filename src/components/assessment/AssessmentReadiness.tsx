@@ -17,6 +17,7 @@ import CameraPreview from '@/components/integrity/CameraPreview';
 import { ReadinessCheck } from '@/lib/readiness/readinessEngine';
 import { NetworkMetrics } from '@/lib/readiness/networkDiagnostics';
 import { UseCameraReturn } from '@/hooks/useCamera';
+import { FaceStateInfo } from '@/hooks/useFaceDetection';
 
 interface AssessmentReadinessProps {
   checks: ReadinessCheck[];
@@ -34,6 +35,8 @@ interface AssessmentReadinessProps {
   candidateName?: string | null;
   isResumable?: boolean;
   onSignOut?: () => void;
+  faceState?: FaceStateInfo;
+  onFaceDetectionChange?: (info: FaceStateInfo) => void;
 }
 
 const checkIcons: Record<string, React.ReactNode> = {
@@ -66,6 +69,8 @@ export default function AssessmentReadiness({
   candidateName,
   isResumable = false,
   onSignOut,
+  faceState,
+  onFaceDetectionChange,
 }: AssessmentReadinessProps) {
   // Checkbox strictly defaults to FALSE so the student must explicitly confirm
   const [agreed, setAgreed] = useState(false);
@@ -139,6 +144,7 @@ export default function AssessmentReadiness({
               showBadge={true}
               camera={camera}
               onRequestCamera={camera ? camera.startCamera : requestCamera}
+              onFaceDetectionChange={onFaceDetectionChange}
             />
           </div>
 
@@ -229,9 +235,11 @@ export default function AssessmentReadiness({
                         </div>
                       )}
 
-                      {/* Camera request hint */}
-                      {check.id === 'camera' && !isPassed && (
-                        <div className="text-[11px] text-[#71717A] leading-tight mt-0.5 truncate">
+                      {/* Camera request & face detection hint */}
+                      {check.id === 'camera' && (
+                        <div className={`text-[11px] leading-tight mt-0.5 truncate ${
+                          isPassed ? 'text-emerald-600 font-medium' : isFailed ? 'text-rose-600 font-medium' : 'text-[#71717A]'
+                        }`}>
                           {check.message || 'Click "Enable" to verify camera permission'}
                         </div>
                       )}
@@ -254,26 +262,33 @@ export default function AssessmentReadiness({
                       </span>
                     )}
 
-                    {/* Camera Action Button when not yet active */}
+                    {/* Camera Action Button or Face Status Pill */}
                     {check.id === 'camera' && !isPassed && (
-                      <button
-                        type="button"
-                        onClick={camera ? camera.startCamera : requestCamera}
-                        disabled={camera?.status === 'requesting'}
-                        className="px-3.5 py-1 rounded-full text-[11.5px] font-medium bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white transition-all shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
-                      >
-                        {camera?.status === 'requesting' ? (
-                          <>
-                            <Loader2 size={11} className="animate-spin" />
-                            <span>Enabling...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Camera size={11} />
-                            <span>Enable</span>
-                          </>
-                        )}
-                      </button>
+                      camera?.status === 'active' ? (
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200/60">
+                          <AlertTriangle size={11} className="text-rose-500" />
+                          <span>Face Required</span>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={camera ? camera.startCamera : requestCamera}
+                          disabled={camera?.status === 'requesting'}
+                          className="px-3.5 py-1 rounded-full text-[11.5px] font-medium bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white transition-all shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          {camera?.status === 'requesting' ? (
+                            <>
+                              <Loader2 size={11} className="animate-spin" />
+                              <span>Enabling...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Camera size={11} />
+                              <span>Enable</span>
+                            </>
+                          )}
+                        </button>
+                      )
                     )}
 
                     {/* Real-time Network Status Pill */}
@@ -392,6 +407,13 @@ export default function AssessmentReadiness({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2.5 shrink-0">
+          {(!checks.find(c => c.id === 'camera') || checks.find(c => c.id === 'camera')?.status !== 'passed') && agreed && (
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
+              <AlertTriangle size={12} className="text-rose-500" />
+              <span>Face required in camera to start</span>
+            </span>
+          )}
+
           <button
             type="button"
             onClick={onBack}
@@ -405,7 +427,13 @@ export default function AssessmentReadiness({
           <button
             type="button"
             onClick={onStartAssessment}
-            disabled={!isOverallReady || !agreed || isStarting || isChecking}
+            disabled={
+              !isOverallReady || 
+              !agreed || 
+              isStarting || 
+              isChecking || 
+              checks.find(c => c.id === 'camera')?.status !== 'passed'
+            }
             className="px-7 py-2.5 sm:py-3 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] active:scale-[0.985] text-white font-medium text-[14px] shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:bg-black/[0.08] disabled:text-[#A1A1AA] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100 group"
           >
             {isStarting ? (

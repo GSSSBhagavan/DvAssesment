@@ -5,19 +5,21 @@ import { useAssessmentState } from '@/hooks/useAssessmentState';
 import { useCamera, stopAllCameraStreams } from '@/hooks/useCamera';
 import { useFaceDetection, FaceDetectionState, HeadOrientation } from '@/hooks/useFaceDetection';
 import ProctoringStatusBar from './ProctoringStatusBar';
-import { AlertTriangle, Maximize } from 'lucide-react';
+import { AlertTriangle, Maximize, VideoOff, Camera } from 'lucide-react';
 
 export default function AntiCheatMonitor() {
   const { recordIntegrityEvent, status, setProctoringMessage } = useAssessmentState();
   const [isFullscreenExit, setIsFullscreenExit] = useState(false);
   const [currentFaceState, setCurrentFaceState] = useState<FaceDetectionState>('FACE_PRESENT');
   const [currentOrientation, setCurrentOrientation] = useState<HeadOrientation | null>(null);
+  const [isCameraDisconnected, setIsCameraDisconnected] = useState(false);
+  const [isFaceAbsentSustained, setIsFaceAbsentSustained] = useState(false);
 
   const isExamActive = status === 'IN_PROGRESS' || status === 'REVIEW';
 
   // Continuous Camera and Face Detection (only active during actual exam)
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const { attachVideo, status: cameraStatus, error: cameraError, stopCamera } = useCamera(isExamActive);
+  const { attachVideo, status: cameraStatus, error: cameraError, stopCamera, startCamera } = useCamera(isExamActive);
   
   const faceAbsentStartRef = useRef<number | null>(null);
   const lastLookingAwayReportedRef = useRef<number>(0);
@@ -44,16 +46,22 @@ export default function AntiCheatMonitor() {
 
   // Handle camera permission and device telemetry
   useEffect(() => {
+    if (!isExamActive) {
+      setIsCameraDisconnected(false);
+      return;
+    }
     if (cameraStatus === 'denied') {
+      setIsCameraDisconnected(true);
       setProctoringMessage('Camera permission was denied. Please allow camera access in browser settings.');
       recordIntegrityEvent('CAMERA_REVOKED', { reason: cameraError || 'Permission denied' });
     } else if (cameraStatus === 'error' || cameraStatus === 'not_found') {
+      setIsCameraDisconnected(true);
       setProctoringMessage('Your camera connection was interrupted. Please restore it.');
       recordIntegrityEvent('CAMERA_DISCONNECTED', { reason: cameraError || 'Camera unavailable' });
     } else if (cameraStatus === 'active') {
-      // Camera healthy
+      setIsCameraDisconnected(false);
     }
-  }, [cameraStatus, cameraError, recordIntegrityEvent, setProctoringMessage]);
+  }, [cameraStatus, cameraError, isExamActive, recordIntegrityEvent, setProctoringMessage]);
 
   const handleFaceStateChange = useCallback((detectionState: FaceDetectionState, faceCount: number) => {
     setCurrentFaceState(detectionState);
@@ -64,9 +72,13 @@ export default function AntiCheatMonitor() {
         faceAbsentStartRef.current = now;
       }
       const durationMs = now - faceAbsentStartRef.current;
+      if (durationMs >= 3500) {
+        setIsFaceAbsentSustained(true);
+      }
       setProctoringMessage('Please keep your face visible in the camera.');
       recordIntegrityEvent('FACE_LOST', { durationMs, faceCount: 0 });
     } else if (detectionState === 'FACE_PRESENT') {
+      setIsFaceAbsentSustained(false);
       if (faceAbsentStartRef.current) {
         const durationMs = Date.now() - faceAbsentStartRef.current;
         faceAbsentStartRef.current = null;
@@ -74,6 +86,7 @@ export default function AntiCheatMonitor() {
       }
       setProctoringMessage(null);
     } else if (detectionState === 'MULTIPLE_FACES') {
+      setIsFaceAbsentSustained(false);
       setProctoringMessage('Multiple people detected. Only the candidate should be visible.');
       recordIntegrityEvent('MULTIPLE_FACES', { faceCount });
     } else if (detectionState === 'LOOKING_AWAY') {
@@ -230,6 +243,44 @@ export default function AntiCheatMonitor() {
         faceState={currentFaceState}
         isLookingAway={currentOrientation?.isLookingAway}
       />
+
+      {/* Floating Alert Banner for Sustained Face Absence */}
+      {isFaceAbsentSustained && !isCameraDisconnected && !isFullscreenExit && (
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[9997] max-w-md w-full px-4 animate-bounce">
+          <div className="bg-rose-600 text-white rounded-2xl shadow-2xl p-4 flex items-center gap-3 border border-white/20 backdrop-blur-md">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+              <AlertTriangle size={20} className="text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-[13px] font-bold leading-tight">Face Not Detected</p>
+              <p className="text-[11.5px] text-rose-100 leading-tight mt-0.5">
+                Continuous face proctoring is mandatory. Please center yourself in front of your camera.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Camera Offline Modal */}
+      {isCameraDisconnected && !isFullscreenExit && (
+        <div className="fixed inset-0 z-[9998] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-6 font-sans">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 flex flex-col items-center text-center border border-slate-200">
+            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mb-5 shadow-inner">
+              <VideoOff className="text-rose-600" size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">Camera Offline · Assessment Paused</h2>
+            <p className="text-slate-600 mb-6 leading-relaxed text-[14px]">
+              Continuous webcam proctoring is mandatory. Your camera has been disconnected or access was revoked. Please enable your camera to resume.
+            </p>
+            <button 
+              onClick={() => startCamera()}
+              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-7 py-3 rounded-xl font-bold text-[13px] tracking-wide transition-all flex items-center gap-2 shadow-md cursor-pointer"
+            >
+              <Camera size={16} /> Reconnect Camera
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Fullscreen Required Modal */}
       {isFullscreenExit && (
